@@ -1,0 +1,11 @@
+{
+	"browser": true,
+	"curly": true,
+	"elision": true,
+	"esversion": 6,
+	"expr": true,
+	"globals": {
+		"js13k": true
+	},
+	"node": true
+}
