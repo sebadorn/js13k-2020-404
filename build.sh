@@ -33,9 +33,9 @@ $TERSER \
 	'Character.js' \
 	'Input.js' \
 	'Level.js' \
+	'levels/Intro.js' \
 	'Renderer.js' \
 	'UI.js' \
-	'levels/Intro.js' \
 	'ui/Text.js' \
 	--ecma 6 --warn \
 	--compress --toplevel \

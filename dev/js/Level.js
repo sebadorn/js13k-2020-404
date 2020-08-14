@@ -8,19 +8,14 @@ class Level {
 
 	/**
 	 *
-	 * @param {number} dt
+	 * @constructor
 	 */
-	draw( dt ) {
-		//
-	}
+	constructor() {
+		// Objects have physic and/or can be interacted with.
+		this.objects = [];
 
-
-	/**
-	 *
-	 * @param {number} dt
-	 */
-	update( dt ) {
-		//
+		// Purely optical, no interaction.
+		this.scenery = [];
 	}
 
 

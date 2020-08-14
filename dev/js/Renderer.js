@@ -11,6 +11,7 @@ js13k.Renderer = {
 
 	cnv: null,
 	ctx: null,
+	inputUpdateInterval: 0,
 	last: 0,
 	level: null,
 
@@ -31,7 +32,8 @@ js13k.Renderer = {
 	 * Clear the canvas.
 	 */
 	clear() {
-		this.ctx.clearRect( 0, 0, this.cnv.width, this.cnv.height );
+		this.ctx.fillStyle = '#EEE';
+		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 	},
 
 
@@ -65,7 +67,7 @@ js13k.Renderer = {
 	 */
 	init( cb ) {
 		this.cnv = document.getElementById( 'c' );
-		this.ctx = this.cnv.getContext( '2d' );
+		this.ctx = this.cnv.getContext( '2d', { alpha: false } );
 
 		this.ui_pause = new js13k.UI.Text(
 			'PAUSED', 'bold 42px sans-serif', [255, 255, 255], 0, 0, true
@@ -73,6 +75,32 @@ js13k.Renderer = {
 
 		window.addEventListener( 'resize', () => this.resize() );
 		this.resize();
+
+		const keysEscape = js13k.Input.getKeysForAction( js13k.Input.ACTION.ESC );
+
+		js13k.Input.onKeyUp( 'Escape', () => {
+			if( this.isPaused ) {
+				this.unpause();
+			}
+			else {
+				this.isPaused = true;
+
+				// Keep on updating the inputs (gamepads), but much slower.
+				this.inputUpdateInterval = setInterval(
+					() => {
+						js13k.Input.update();
+
+						for( const key of keysEscape.gamepad ) {
+							if( js13k.Input.isPressedGamepad( key ) ) {
+								this.unpause();
+								return;
+							}
+						}
+					},
+					500
+				);
+			}
+		} );
 
 		cb();
 	},
@@ -89,30 +117,19 @@ js13k.Renderer = {
 			const diff = timestamp - this.last; // Time that passed between frames. [ms]
 
 			// Target speed of 60 FPS (=> 1000 / 60 ~= 16.667 [ms]).
-			const dt = diff / 1000 * this.TARGET_FPS;
+			const dt = this.TARGET_FPS * diff / 1000;
 
 			this.ctx.imageSmoothingEnabled = false;
 			this.ctx.lineWidth = 1;
 			this.ctx.textBaseline = 'alphabetic';
 
 			if( this.isPaused ) {
-				this.drawPause( dt );
-
-				if(
-					js13k.Input.isPressed( js13k.Input.ACTION.INTERACT, true ) ||
-					js13k.Input.isPressed( js13k.Input.ACTION.ESC, true )
-				) {
-					this.isPaused = false;
-				}
+				this.drawPause();
+				return; // Stop the loop.
 			}
 			else {
-				if( js13k.Input.isPressed( js13k.Input.ACTION.ESC, true ) ) {
-					this.isPaused = true;
-				}
-				else {
-					this.level && this.level.update( dt );
-					this.draw( dt );
-				}
+				this.level && this.level.update( dt );
+				this.draw( dt );
 			}
 		}
 
@@ -131,6 +148,22 @@ js13k.Renderer = {
 
 		this.centerX = Math.round( window.innerWidth / 2 );
 		this.centerY = Math.round( window.innerHeight / 2 );
+
+		if( this.isPaused ) {
+			this.drawPause()
+		}
+	},
+
+
+	/**
+	 *
+	 */
+	unpause() {
+		if( this.isPaused ) {
+			clearInterval( this.inputUpdateInterval );
+			this.isPaused = false;
+			this.mainLoop();
+		}
 	}
 
 

@@ -30,17 +30,65 @@ js13k.Input = {
 	_gpButtons: {},
 	_ignoreUntilReleased: {},
 	_on: {
-		esc: [],
 		gp_connect: [],
-		gp_disconnect: [],
-		interact: []
+		gp_disconnect: []
 	},
 	_onKeyDown: {},
+	_onKeyUp: {},
 
 	gamepads: {},
 	isLinuxFirefox: false,
 	keystate: {},
 	numGamepads: 0,
+
+
+	/**
+	 *
+	 */
+	buildActionKeyMap() {
+		this.ACTION_KEY_MAP = {
+			[this.ACTION.ESC]: {
+				keyboard: ['Escape'],
+				gamepad: [9]
+			},
+			[this.ACTION.INTERACT]: {
+				keyboard: ['Enter', 'KeyE'],
+				gamepad: [0]
+			},
+			[this.ACTION.LEFT]: {
+				keyboard: ['ArrowLeft'],
+				gamepad: [14]
+			},
+			[this.ACTION.FIGHT_4]: {
+				keyboard: ['ArrowLeft', 'KeyA'],
+				gamepad: [this.isLinuxFirefox ? 3 : 2, 14]
+			},
+			[this.ACTION.UP]: {
+				keyboard: ['ArrowUp'],
+				gamepad: [12]
+			},
+			[this.ACTION.FIGHT_3]: {
+				keyboard: ['ArrowUp', 'KeyW'],
+				gamepad: [this.isLinuxFirefox ? 2 : 3, 12]
+			},
+			[this.ACTION.RIGHT]: {
+				keyboard: ['ArrowRight'],
+				gamepad: [15]
+			},
+			[this.ACTION.FIGHT_2]: {
+				keyboard: ['ArrowRight', 'KeyD'],
+				gamepad: [1, 15]
+			},
+			[this.ACTION.DOWN]: {
+				keyboard: ['ArrowDown'],
+				gamepad: [13]
+			},
+			[this.ACTION.FIGHT_1]: {
+				keyboard: ['ArrowDown', 'KeyS'],
+				gamepad: [0, 13]
+			}
+		};
+	},
 
 
 	/**
@@ -76,65 +124,7 @@ js13k.Input = {
 	 * @return {object}
 	 */
 	getKeysForAction( action ) {
-		const kb = [];
-		const gp = [];
-
-		switch( action ) {
-			case this.ACTION.ESC:
-				kb.push( 'Escape' );
-				gp.push( 9 );
-				break;
-
-			case this.ACTION.INTERACT:
-				kb.push( 'Enter', 'KeyE' );
-				gp.push( 0 );
-				break;
-
-			case this.ACTION.LEFT:
-				kb.push( 'ArrowLeft' );
-				gp.push( 14 );
-				break;
-
-			case this.ACTION.FIGHT_4:
-				kb.push( 'ArrowLeft', 'KeyA' );
-				gp.push( this.isLinuxFirefox ? 3 : 2, 14 );
-				break;
-
-			case this.ACTION.UP:
-				kb.push( 'ArrowUp' );
-				gp.push( 12 );
-				break;
-
-			case this.ACTION.FIGHT_3:
-				kb.push( 'ArrowUp', 'KeyW' );
-				gp.push( this.isLinuxFirefox ? 2 : 3, 12 );
-				break;
-
-			case this.ACTION.RIGHT:
-				kb.push( 'ArrowRight' );
-				gp.push( 15 );
-				break;
-
-			case this.ACTION.FIGHT_2:
-				kb.push( 'ArrowRight', 'KeyD' );
-				gp.push( 1, 15 );
-				break;
-
-			case this.ACTION.DOWN:
-				kb.push( 'ArrowDown' );
-				gp.push( 13 );
-				break;
-
-			case this.ACTION.FIGHT_1:
-				kb.push( 'ArrowDown', 'KeyS' );
-				gp.push( 0, 13 );
-				break;
-		}
-
-		return {
-			keyboard: kb,
-			gamepad: gp
-		};
+		return this.ACTION_KEY_MAP[action];
 	},
 
 
@@ -146,66 +136,8 @@ js13k.Input = {
 		const ua = String( navigator.userAgent ).toLowerCase();
 		this.isLinuxFirefox = ua.includes( 'linux' ) && ua.includes( 'firefox' );
 
-		document.body.onkeydown = ev => {
-			const ks = this.keystate[ev.code];
-
-			if( !ks || !ks.waitForReset ) {
-				this.keystate[ev.code] = {
-					time: Date.now()
-				};
-
-				this._onKeyDown[ev.code] && this._onKeyDown[ev.code]();
-			}
-
-			if( ev.code === 'Digit1' ) {
-				this.PROMPTS = 1;
-			}
-			else if( ev.code === 'Digit2' ) {
-				this.PROMPTS = 2;
-			}
-			else if( ev.code === 'Digit3' ) {
-				this.PROMPTS = 3;
-			}
-		};
-
-		document.body.onkeyup = ev => {
-			this.keystate[ev.code] = {
-				time: 0
-			};
-		};
-
-		window.addEventListener( 'gamepadconnected', ev => {
-			const id = String( ev.gamepad.id ).toLowerCase();
-
-			if(
-				id.includes( 'sony' ) ||
-				id.includes( 'dualshock' ) ||
-				id.includes( 'playstation' ) ||
-				id.includes( 'ps3' )
-			) {
-				this.PROMPTS = 2;
-			}
-			else if(
-				id.includes( 'xbox' ) ||
-				id.includes( 'microsoft' )
-			) {
-				this.PROMPTS = 3;
-			}
-
-			this.numGamepads++;
-			this.gamepads[ev.gamepad.index] = ev.gamepad;
-
-			this._on.gp_connect.forEach( cb => cb() );
-		} );
-
-		window.addEventListener( 'gamepaddisconnected', ev => {
-			this.PROMPTS = 1;
-
-			this.numGamepads--;
-			delete this.gamepads[ev.gamepad.index];
-
-			this._on.gp_disconnect.forEach( cb => cb() );
-		} );
+		this.buildActionKeyMap();
+		this.registerEvents();
 	},
 
 
@@ -399,11 +331,98 @@ js13k.Input = {
 
 	/**
 	 * Add a listener for the keydown event.
-	 * @param {number}   code - Key code.
+	 * @param {string}   code - Key code.
 	 * @param {function} cb   - Callback.
 	 */
 	onKeyDown( code, cb ) {
-		this._onKeyDown[code] = cb;
+		const list = this._onKeyDown[code] || [];
+		list.push( cb );
+		this._onKeyDown[code] = list;
+	},
+
+
+	/**
+	 * Add a listener for the keyup event.
+	 * @param {string}   code - Key code.
+	 * @param {function} cb   - Callback.
+	 */
+	onKeyUp( code, cb ) {
+		const list = this._onKeyUp[code] || [];
+		list.push( cb );
+		this._onKeyUp[code] = list;
+	},
+
+
+	/**
+	 *
+	 */
+	registerEvents() {
+		document.body.onkeydown = ev => {
+			const ks = this.keystate[ev.code];
+
+			if( !ks || !ks.waitForReset ) {
+				this.keystate[ev.code] = {
+					time: Date.now()
+				};
+
+				if( this._onKeyDown[ev.code] ) {
+					this._onKeyDown[ev.code].forEach( cb => cb() );
+				}
+			}
+
+			if( ev.code === 'Digit1' ) {
+				this.PROMPTS = 1;
+			}
+			else if( ev.code === 'Digit2' ) {
+				this.PROMPTS = 2;
+			}
+			else if( ev.code === 'Digit3' ) {
+				this.PROMPTS = 3;
+			}
+		};
+
+		document.body.onkeyup = ev => {
+			this.keystate[ev.code] = {
+				time: 0
+			};
+
+			if( this._onKeyUp[ev.code] ) {
+				this._onKeyUp[ev.code].forEach( cb => cb() );
+			}
+		};
+
+		window.addEventListener( 'gamepadconnected', ev => {
+			const id = String( ev.gamepad.id ).toLowerCase();
+
+			if(
+				id.includes( 'sony' ) ||
+				id.includes( 'dualshock' ) ||
+				id.includes( 'playstation' ) ||
+				id.includes( 'ps3' )
+			) {
+				this.PROMPTS = 2;
+			}
+			else if(
+				id.includes( 'xbox' ) ||
+				id.includes( 'microsoft' )
+			) {
+				this.PROMPTS = 3;
+			}
+
+			this.numGamepads++;
+			this.gamepads[ev.gamepad.index] = ev.gamepad;
+
+			this._on.gp_connect.forEach( cb => cb() );
+		} );
+
+		window.addEventListener( 'gamepaddisconnected', ev => {
+			this.PROMPTS = 1;
+
+			this.numGamepads--;
+			delete this.gamepads[ev.gamepad.index];
+
+			this._on.gp_disconnect.forEach( cb => cb() );
+		} );
 	},
 
 
