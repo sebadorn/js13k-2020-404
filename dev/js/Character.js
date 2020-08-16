@@ -9,15 +9,24 @@ class Character {
 	/**
 	 *
 	 * @constructor
+	 * @param {?number} x
+	 * @param {?number} y
+	 * @param {?number} w
+	 * @param {?number} h
 	 */
-	constructor() {
+	constructor( x, y, w, h ) {
 		this.dirX = 0;
 		this.dirY = 0;
-		this.lastDir = 0;
 		this.progress = 0;
-		this.speed = 8;
-		this.x = 0;
-		this.y = 0;
+		this.speed = 16;
+		this.velocityX = 0;
+		this.velocityY = 0;
+		this.x = x || 0;
+		this.y = y || 0;
+		this.w = w || 0;
+		this.h = h || 0;
+
+		this.isGrounded = false;
 	}
 
 
@@ -26,10 +35,8 @@ class Character {
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
 	draw( ctx ) {
-		const size = 40;
-
 		ctx.fillStyle = '#FF0000';
-		ctx.fillRect( this.x, this.y + size, size, size );
+		ctx.fillRect( this.x, this.y, this.w, this.h );
 	}
 
 
@@ -46,14 +53,27 @@ class Character {
 
 		if( typeof dir.y === 'number' && dir.y !== 0 ) {
 			this.dirY = ( dir.y < 0 ) ? -1 : 1;
+
+			if( this.isGrounded ) {
+				this.velocityY += dt * dir.y * 40;
+				this.isGrounded = false;
+			}
 		}
 
 		if( dir.x !== 0 ) {
 			this.dirX = ( dir.x < 0 ) ? -1 : 1;
 		}
 
-		this.lastDir = dir.x;
-		this.x += Math.round( dir.x * this.speed );
+		this.x += Math.round( dt * dir.x * this.speed );
+
+		if( this.isGrounded ) {
+			this.velocityY = 0;
+		}
+		else {
+			this.velocityY = Math.min( Math.round( this.velocityY + dt * js13k.GRAVITY ), js13k.MAX_VELOCITY_Y );
+		}
+
+		this.y += this.velocityY;
 	}
 
 

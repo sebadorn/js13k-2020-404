@@ -73,35 +73,7 @@ js13k.Renderer = {
 			'PAUSED', 'bold 42px sans-serif', [255, 255, 255], 0, 0, true
 		);
 
-		window.addEventListener( 'resize', () => this.resize() );
-		this.resize();
-
-		const keysEscape = js13k.Input.getKeysForAction( js13k.Input.ACTION.ESC );
-
-		js13k.Input.onKeyUp( 'Escape', () => {
-			if( this.isPaused ) {
-				this.unpause();
-			}
-			else {
-				this.isPaused = true;
-
-				// Keep on updating the inputs (gamepads), but much slower.
-				this.inputUpdateInterval = setInterval(
-					() => {
-						js13k.Input.update();
-
-						for( const key of keysEscape.gamepad ) {
-							if( js13k.Input.isPressedGamepad( key ) ) {
-								this.unpause();
-								return;
-							}
-						}
-					},
-					500
-				);
-			}
-		} );
-
+		this.registerEvents();
 		cb();
 	},
 
@@ -140,6 +112,41 @@ js13k.Renderer = {
 
 
 	/**
+	 *
+	 */
+	registerEvents() {
+		window.addEventListener( 'resize', () => this.resize() );
+		this.resize();
+
+		const keysEscape = js13k.Input.getKeysForAction( js13k.Input.ACTION.ESC );
+
+		js13k.Input.onKeyUp( 'Escape', () => {
+			if( this.isPaused ) {
+				this.unpause();
+			}
+			else {
+				this.isPaused = true;
+
+				// Keep on updating the inputs (gamepads), but much slower.
+				this.inputUpdateInterval = setInterval(
+					() => {
+						js13k.Input.update();
+
+						for( const key of keysEscape.gamepad ) {
+							if( js13k.Input.isPressedGamepad( key ) ) {
+								this.unpause();
+								return;
+							}
+						}
+					},
+					500
+				);
+			}
+		} );
+	},
+
+
+	/**
 	 * Resize the canvas.
 	 */
 	resize() {
@@ -150,7 +157,7 @@ js13k.Renderer = {
 		this.centerY = Math.round( window.innerHeight / 2 );
 
 		if( this.isPaused ) {
-			this.drawPause()
+			this.drawPause();
 		}
 	},
 

@@ -33,6 +33,7 @@ $TERSER \
 	'Character.js' \
 	'Input.js' \
 	'Level.js' \
+	'LevelObject.js' \
 	'levels/Intro.js' \
 	'Renderer.js' \
 	'UI.js' \
@@ -51,18 +52,21 @@ find -type f -name '*.js' -not -name 'i.js' -delete
 # 9: highest compression level
 zip -9 -q -r "$OUT_FILE" ./*
 
+BEFORE_ADVZIP_SIZE=$( stat --printf="%s" "$OUT_FILE" )
+
 # Further optimize the compression.
 # advzip can be installed from the "advancecomp" package.
 # 4: best compression
 # i: additional iterations
-advzip -q -z -4 -i 20 "$OUT_FILE"
+advzip -q -z -4 -i 25 "$OUT_FILE"
 # Test integrity of file.
 # STDOUT(1) is just the file name.
 # STDERR(2) shows actual errors, if there are some.
 advzip -t -p "$OUT_FILE" 1> /dev/null
 
 CURRENT_SIZE=$( stat --printf="%s" "$OUT_FILE" )
-printf '  - Max size: %5d bytes\n' "$MAX_SIZE"
-printf '  - ZIP size: %5d bytes\n' "$CURRENT_SIZE"
+printf '  - Max size:                 %5d bytes\n' "$MAX_SIZE"
+printf '  - ZIP size (before advzip): %5d bytes\n' "$BEFORE_ADVZIP_SIZE"
+printf '  - ZIP size (after advzip):  %5d bytes\n' "$CURRENT_SIZE"
 
 echo '  - Done.'
