@@ -18,10 +18,10 @@ class LevelObject {
 	constructor( x, y, w, h, movable ) {
 		this.color = '#999';
 
-		this.x = x || 0;
-		this.y = y || 0;
-		this.w = w || 0;
-		this.h = h || 0;
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
 
 		this.dirX = 0;
 		this.dirY = 0;

@@ -21,12 +21,19 @@ class Character {
 		this.speed = 16;
 		this.velocityX = 0;
 		this.velocityY = 0;
-		this.x = x || 0;
-		this.y = y || 0;
-		this.w = w || 0;
-		this.h = h || 0;
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
 
-		this.isGrounded = false;
+		this.nextPos = {}; // x, y will be set in update().
+
+		// These attributes exist, but are set in or after the collision
+		// detection. Commenting it out here to save some bytes.
+		//
+		// this.blocks = {};
+		// this.isGrounded = false;
+		// this.isOnWall = false;
 	}
 
 
@@ -64,8 +71,6 @@ class Character {
 			this.dirX = ( dir.x < 0 ) ? -1 : 1;
 		}
 
-		this.x += Math.round( dt * dir.x * this.speed );
-
 		if( this.isGrounded ) {
 			this.velocityY = 0;
 		}
@@ -73,7 +78,11 @@ class Character {
 			this.velocityY = Math.min( Math.round( this.velocityY + dt * js13k.GRAVITY ), js13k.MAX_VELOCITY_Y );
 		}
 
-		this.y += this.velocityY;
+		// Do not set the position just yet. We need the current and
+		// projected next position for collision detection. The collision
+		// detection will then set the correct position.
+		this.nextPos.x = this.x + Math.round( dt * dir.x * this.speed );
+		this.nextPos.y = this.y + this.velocityY;
 	}
 
 
