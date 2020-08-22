@@ -9,13 +9,12 @@ class LevelObject {
 	/**
 	 *
 	 * @constructor
-	 * @param {?number}  x
-	 * @param {?number}  y
-	 * @param {?number}  w
-	 * @param {?number}  h
-	 * @param {?boolean} movable
+	 * @param {?number} x
+	 * @param {?number} y
+	 * @param {?number} w
+	 * @param {?number} h
 	 */
-	constructor( x, y, w, h, movable ) {
+	constructor( x, y, w, h ) {
 		this.color = '#999';
 
 		this.x = x;
@@ -26,13 +25,12 @@ class LevelObject {
 		this.dirX = 0;
 		this.dirY = 0;
 
-		this.collision = true;
+		this.velocityX = 0;
+		this.velocityY = 0;
 
-		// Unmovable objects do not need to be checked for
-		// collision detection against other objects.
-		// Only movable objects not position corrections
-		// based on collision detection.
-		this.movable = !!movable;
+		this.blocks = {};
+		this.collision = true;
+		this.nextPos = { x, y };
 	}
 
 
@@ -51,7 +49,7 @@ class LevelObject {
 	 * @param {number} dt
 	 */
 	update( dt ) {
-		//
+		// pass
 	}
 
 

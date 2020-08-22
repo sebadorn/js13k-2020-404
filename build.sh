@@ -2,7 +2,7 @@
 
 cd $(dirname "$0")
 
-OUT_FILE='js13k-404.zip'
+OUT_FILE='And-then-it-was-gone.zip'
 MAX_SIZE=13312
 TERSER="$HOME/.node/bin/terser"
 
@@ -30,10 +30,11 @@ sed -E -i'' 's/<script src="([a-zA-Z0-9_-]+\/)?[a-zA-Z0-9_.-]{2,}\.js"><\/script
 # Minify and combine the JS files.
 $TERSER \
 	'js13k.js' \
-	'Character.js' \
 	'Input.js' \
 	'Level.js' \
 	'LevelObject.js' \
+	'Character.js' \
+	'Item.js' \
 	'levels/Intro.js' \
 	'Renderer.js' \
 	'UI.js' \
@@ -58,7 +59,7 @@ BEFORE_ADVZIP_SIZE=$( stat --printf="%s" "$OUT_FILE" )
 # advzip can be installed from the "advancecomp" package.
 # 4: best compression
 # i: additional iterations
-advzip -q -z -4 -i 25 "$OUT_FILE"
+advzip -q -z -4 -i 100 "$OUT_FILE"
 # Test integrity of file.
 # STDOUT(1) is just the file name.
 # STDERR(2) shows actual errors, if there are some.

@@ -17,31 +17,9 @@ class Level_Intro extends js13k.Level {
 
 		this.objects.push(
 			new js13k.LevelObject( 100, 700, 600, 1000 ),
-			new js13k.LevelObject( 900, 800, 400, 1000 )
+			new js13k.LevelObject( 900, 800, 600, 1000 ),
+			new js13k.LevelObject( 1200, 400, 60, 300 )
 		);
-	}
-
-
-	/**
-	 *
-	 * @param {CanvasRenderingContext2D} ctx
-	 */
-	draw( ctx ) {
-		this.player.draw( ctx );
-
-		super.draw( ctx );
-	}
-
-
-	/**
-	 *
-	 * @param {number} dt
-	 */
-	update( dt ) {
-		const dir = js13k.Input.getDirections();
-		this.player.update( dt, dir );
-
-		super.update( dt );
 	}
 
 

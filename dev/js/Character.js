@@ -3,35 +3,26 @@
 
 {
 
-class Character {
+class Character extends js13k.LevelObject {
 
 
 	/**
 	 *
 	 * @constructor
-	 * @param {?number} x
-	 * @param {?number} y
-	 * @param {?number} w
-	 * @param {?number} h
+	 * @param {number} x
+	 * @param {number} y
+	 * @param {number} w
+	 * @param {number} h
 	 */
 	constructor( x, y, w, h ) {
-		this.dirX = 0;
-		this.dirY = 0;
-		this.progress = 0;
-		this.speed = 16;
-		this.velocityX = 0;
-		this.velocityY = 0;
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = h;
+		super( x, y, w, h );
 
-		this.nextPos = {}; // x, y will be set in update().
+		this.color = '#F00';
+		this.speed = 16;
 
 		// These attributes exist, but are set in or after the collision
 		// detection. Commenting it out here to save some bytes.
 		//
-		// this.blocks = {};
 		// this.isGrounded = false;
 		// this.isOnWall = false;
 	}
@@ -42,8 +33,29 @@ class Character {
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
 	draw( ctx ) {
-		ctx.fillStyle = '#FF0000';
-		ctx.fillRect( this.x, this.y, this.w, this.h );
+		super.draw( ctx );
+		// TODO:
+	}
+
+
+	/**
+	 *
+	 */
+	jump() {
+		if( this.isGrounded || this.isOnWall ) {
+			this.velocityY -= 30;
+			this.isGrounded = false;
+			this.isOnWall = 0;
+
+			if( this.isOnWall ) {
+				if( this.blocks.left ) {
+					this.velocityX += 30;
+				}
+				else if( this.blocks.right ) {
+					this.velocityX -= 30;
+				}
+			}
+		}
 	}
 
 
@@ -55,33 +67,28 @@ class Character {
 	 * @param {number} dir.y
 	 */
 	update( dt, dir ) {
-		this.progress += dt;
 		this.dirY = 0;
 
 		if( typeof dir.y === 'number' && dir.y !== 0 ) {
-			this.dirY = ( dir.y < 0 ) ? -1 : 1;
-
-			if( this.isGrounded ) {
-				this.velocityY += dt * dir.y * 40;
-				this.isGrounded = false;
-			}
+			this.dirY = dir.y < 0 ? -1 : 1;
 		}
 
 		if( dir.x !== 0 ) {
-			this.dirX = ( dir.x < 0 ) ? -1 : 1;
+			this.dirX = dir.x < 0 ? -1 : 1;
 		}
 
-		if( this.isGrounded ) {
-			this.velocityY = 0;
+		if( !this.isOnWall ) {
+			this.velocityX = Math.round( dt * dir.x * this.speed );
 		}
-		else {
+
+		if( !this.isGrounded && !this.isOnWall ) {
 			this.velocityY = Math.min( Math.round( this.velocityY + dt * js13k.GRAVITY ), js13k.MAX_VELOCITY_Y );
 		}
 
 		// Do not set the position just yet. We need the current and
 		// projected next position for collision detection. The collision
 		// detection will then set the correct position.
-		this.nextPos.x = this.x + Math.round( dt * dir.x * this.speed );
+		this.nextPos.x = this.x + this.velocityX;
 		this.nextPos.y = this.y + this.velocityY;
 	}
 
