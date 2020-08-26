@@ -194,14 +194,13 @@ class Level {
 	 * @param {CanvasRenderingContext2d} ctx
 	 */
 	draw( ctx ) {
+		this.scenery.forEach( o => o.draw( ctx ) );
 		this.objects.forEach( o => o.draw( ctx ) );
 		this.items.forEach( o => o.draw( ctx ) );
 
 		if( this.player ) {
 			this.player.draw( ctx );
 		}
-
-		this.scenery.forEach( o => o.draw( ctx ) );
 	}
 
 

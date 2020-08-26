@@ -7,7 +7,7 @@
 const js13k = {
 
 
-	GRAVITY: 1.5,
+	GRAVITY: 1,
 	MAX_VELOCITY_Y: 12,
 
 

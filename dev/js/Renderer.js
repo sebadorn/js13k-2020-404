@@ -7,6 +7,7 @@
 js13k.Renderer = {
 
 
+	MAX_HEIGHT: 760,
 	TARGET_FPS: 60,
 
 	cnv: null,
@@ -32,7 +33,7 @@ js13k.Renderer = {
 	 * Clear the canvas.
 	 */
 	clear() {
-		this.ctx.fillStyle = '#EEE';
+		this.ctx.fillStyle = '#cbdbfc';
 		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 	},
 
@@ -52,8 +53,8 @@ js13k.Renderer = {
 	drawPause() {
 		this.clear();
 
-		this.ctx.fillStyle = '#F00000';
-		this.ctx.fillRect( 0, 0, window.innerWidth, window.innerHeight );
+		this.ctx.fillStyle = '#F00';
+		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 
 		this.ui_pause.centerX();
 		this.ui_pause.y = this.centerY - 80;
@@ -150,11 +151,13 @@ js13k.Renderer = {
 	 * Resize the canvas.
 	 */
 	resize() {
-		this.cnv.height = window.innerHeight;
+		const diff = window.innerHeight - this.MAX_HEIGHT;
+
+		this.cnv.height = window.innerHeight - diff;
 		this.cnv.width = window.innerWidth;
 
-		this.centerX = Math.round( window.innerWidth / 2 );
-		this.centerY = Math.round( window.innerHeight / 2 );
+		this.centerX = Math.round( this.cnv.width / 2 );
+		this.centerY = Math.round( this.cnv.height / 2 );
 
 		if( this.isPaused ) {
 			this.drawPause();

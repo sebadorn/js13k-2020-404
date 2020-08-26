@@ -11,13 +11,11 @@ class Character extends js13k.LevelObject {
 	 * @constructor
 	 * @param {number} x
 	 * @param {number} y
-	 * @param {number} w
-	 * @param {number} h
 	 */
-	constructor( x, y, w, h ) {
-		super( x, y, w, h );
+	constructor( x, y ) {
+		super( x, y, 6 * 3, 8 * 3 );
 
-		this.color = '#F00';
+		this.size = 3;
 		this.speed = 16;
 
 		// These attributes exist, but are set in or after the collision
@@ -33,8 +31,34 @@ class Character extends js13k.LevelObject {
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
 	draw( ctx ) {
-		super.draw( ctx );
-		// TODO:
+		const s = this.size;
+		const s2 = s + s;
+		const s3 = s2 + s;
+		const s5 = s3 + s2;
+		const s6 = s3 + s3;
+
+		// torso/head
+		ctx.fillStyle = '#df7126';
+		ctx.fillRect( this.x, this.y, s6, s6 );
+
+		// facing left
+		if( this.dirX < 0 ) {
+			// legs
+			ctx.fillRect( this.x + s5, this.y + s6, s, s2 );
+			ctx.fillRect( this.x + s2, this.y + s6, s, s2 );
+			// eye
+			ctx.fillStyle = '#fff';
+			ctx.fillRect( this.x + s, this.y + s, s2, s2 );
+		}
+		// facing right
+		else {
+			// legs
+			ctx.fillRect( this.x, this.y + s6, s, s2 );
+			ctx.fillRect( this.x + s3, this.y + s6, s, s2 );
+			// eye
+			ctx.fillStyle = '#fff';
+			ctx.fillRect( this.x + s3, this.y + s, s2, s2 );
+		}
 	}
 
 

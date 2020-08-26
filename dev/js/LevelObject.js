@@ -13,9 +13,10 @@ class LevelObject {
 	 * @param {?number} y
 	 * @param {?number} w
 	 * @param {?number} h
+	 * @param {?string} color
 	 */
-	constructor( x, y, w, h ) {
-		this.color = '#999';
+	constructor( x, y, w, h, color ) {
+		this.color = color || '#696a6a';
 
 		this.x = x;
 		this.y = y;
