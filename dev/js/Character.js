@@ -67,16 +67,16 @@ class Character extends js13k.LevelObject {
 	 */
 	jump() {
 		if( this.isGrounded || this.isOnWall ) {
-			this.velocityY -= 30;
+			this.velocityY += js13k.JUMP_VELOCITY;
 			this.isGrounded = false;
 			this.isOnWall = 0;
 
 			if( this.isOnWall ) {
 				if( this.blocks.left ) {
-					this.velocityX += 30;
+					this.velocityX -= js13k.JUMP_VELOCITY;
 				}
 				else if( this.blocks.right ) {
-					this.velocityX -= 30;
+					this.velocityX += js13k.JUMP_VELOCITY;
 				}
 			}
 		}

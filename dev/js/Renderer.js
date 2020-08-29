@@ -51,8 +51,6 @@ js13k.Renderer = {
 	 * Draw the pause screen.
 	 */
 	drawPause() {
-		this.clear();
-
 		this.ctx.fillStyle = '#F00';
 		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 
@@ -95,6 +93,8 @@ js13k.Renderer = {
 			this.ctx.imageSmoothingEnabled = false;
 			this.ctx.lineWidth = 1;
 			this.ctx.textBaseline = 'alphabetic';
+
+			this.ctx.setTransform( 1, 0, 0, 1, 0, 0 );
 
 			if( this.isPaused ) {
 				this.drawPause();

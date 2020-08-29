@@ -194,6 +194,12 @@ class Level {
 	 * @param {CanvasRenderingContext2d} ctx
 	 */
 	draw( ctx ) {
+		// Center x axis on player.
+		const halfWidth = Math.round( js13k.Renderer.cnv.width / 2 );
+		const offsetX = Math.min( 0, halfWidth - this.player.x );
+
+		ctx.setTransform( 1, 0, 0, 1, offsetX, 0 );
+
 		this.scenery.forEach( o => o.draw( ctx ) );
 		this.objects.forEach( o => o.draw( ctx ) );
 		this.items.forEach( o => o.draw( ctx ) );
@@ -249,32 +255,30 @@ class Level {
 
 		this.scenery.forEach( o => o.update( dt ) );
 
-		if( this.player ) {
-			const dir = js13k.Input.getDirections();
+		const dir = js13k.Input.getDirections();
 
-			this.collisionDetection( this.player, this.player.nextPos );
-			this.player.isGrounded = !!this.player.blocks.bottom;
+		this.collisionDetection( this.player, this.player.nextPos );
+		this.player.isGrounded = !!this.player.blocks.bottom;
 
-			if(
-				!this.player.isGrounded &&
-				( this.player.blocks.left || this.player.blocks.right )
-			) {
-				this.player.isOnWall = this.timer;
+		if(
+			!this.player.isGrounded &&
+			( this.player.blocks.left || this.player.blocks.right )
+		) {
+			this.player.isOnWall = this.timer;
 
-				this.player.velocityX = 0;
-				this.player.velocityY = 0;
-			}
-
-			if( js13k.Input.isPressedKey( 'Space', true ) ) {
-				this.player.jump();
-			}
-
-			if( js13k.Input.isPressedKey( 'Enter', true ) ) {
-				this.throwItem( dir );
-			}
-
-			this.player.update( dt, dir );
+			this.player.velocityX = 0;
+			this.player.velocityY = 0;
 		}
+
+		if( js13k.Input.isPressedKey( 'Space', true ) ) {
+			this.player.jump();
+		}
+
+		if( js13k.Input.isPressedKey( 'Enter', true ) ) {
+			this.throwItem( dir );
+		}
+
+		this.player.update( dt, dir );
 	}
 
 
