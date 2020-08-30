@@ -13,7 +13,7 @@ class Level_Intro extends js13k.Level {
 	constructor() {
 		super();
 
-		this.player = new js13k.Character( 200, 300, 40, 40 );
+		this.player = new js13k.Character( 200, 300, 3 );
 
 		this.objects.push(
 			new js13k.LevelObject( 100, 700, 600, 1000 ),

@@ -7,9 +7,12 @@
 const js13k = {
 
 
+	// Config
 	GRAVITY: 1,
 	JUMP_VELOCITY: -24,
+	MAX_CANVAS_HEIGHT: 760,
 	MAX_VELOCITY_Y: 12,
+	TARGET_FPS: 60,
 
 
 	/**

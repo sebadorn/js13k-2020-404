@@ -258,10 +258,10 @@ class Level {
 		const dir = js13k.Input.getDirections();
 
 		this.collisionDetection( this.player, this.player.nextPos );
-		this.player.isGrounded = !!this.player.blocks.bottom;
+		this.player.isOnGround = !!this.player.blocks.bottom;
 
 		if(
-			!this.player.isGrounded &&
+			!this.player.isOnGround &&
 			( this.player.blocks.left || this.player.blocks.right )
 		) {
 			this.player.isOnWall = this.timer;

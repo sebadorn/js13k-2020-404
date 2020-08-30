@@ -32,6 +32,7 @@ class LevelObject {
 		this.blocks = {};
 		this.collision = true;
 		this.nextPos = { x, y };
+		this.progress = 0;
 	}
 
 
@@ -50,7 +51,7 @@ class LevelObject {
 	 * @param {number} dt
 	 */
 	update( dt ) {
-		// pass
+		this.progress += dt;
 	}
 
 

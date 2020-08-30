@@ -7,9 +7,6 @@
 js13k.Renderer = {
 
 
-	MAX_HEIGHT: 760,
-	TARGET_FPS: 60,
-
 	cnv: null,
 	ctx: null,
 	inputUpdateInterval: 0,
@@ -88,7 +85,7 @@ js13k.Renderer = {
 			const diff = timestamp - this.last; // Time that passed between frames. [ms]
 
 			// Target speed of 60 FPS (=> 1000 / 60 ~= 16.667 [ms]).
-			const dt = this.TARGET_FPS * diff / 1000;
+			const dt = js13k.TARGET_FPS * diff / 1000;
 
 			this.ctx.imageSmoothingEnabled = false;
 			this.ctx.lineWidth = 1;
@@ -151,7 +148,7 @@ js13k.Renderer = {
 	 * Resize the canvas.
 	 */
 	resize() {
-		const diff = window.innerHeight - this.MAX_HEIGHT;
+		const diff = window.innerHeight - js13k.MAX_CANVAS_HEIGHT;
 
 		this.cnv.height = window.innerHeight - diff;
 		this.cnv.width = window.innerWidth;
