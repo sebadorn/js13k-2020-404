@@ -101,12 +101,12 @@ class Level {
 				) {
 					if( collisionBelow ) {
 						if( p0.y < setTo.y ) {
-							blocks.bottom = o;
+							blocks.b = o;
 							setTo.y = tYStart - subject.h;
 						}
 					}
 					else if( p0.y > setTo.y ) {
-						blocks.top = o;
+						blocks.t = o;
 						setTo.y = tYEnd;
 					}
 
@@ -128,12 +128,12 @@ class Level {
 				) {
 					if( collisionRight ) {
 						if( p0.x < setTo.x ) {
-							blocks.right = o;
+							blocks.r = o;
 							setTo.x = tXStart - subject.w;
 						}
 					}
 					else if( p0.x > setTo.x ) {
-						blocks.left = o;
+						blocks.l = o;
 						setTo.x = tXEnd;
 					}
 
@@ -148,39 +148,55 @@ class Level {
 		// Check again if the subject is still touching the
 		// found blocks after all position corrections are done.
 
-		if( blocks.bottom ) {
-			const bottom = blocks.bottom;
+		if( blocks.b ) {
+			const bottom = blocks.b;
 			const gap = bottom.y - setTo.y - subject.h;
 
-			if( Math.abs( gap ) >= 1 ) {
-				blocks.bottom = null;
+			if(
+				Math.abs( gap ) >= 1 ||
+				( bottom.x > setTo.x + subject.w ) ||
+				( setTo.x > bottom.x + bottom.w )
+			) {
+				blocks.b = null;
 			}
 		}
 
-		if( blocks.top ) {
-			const top = blocks.top;
+		if( blocks.t ) {
+			const top = blocks.t;
 			const gap = top.y + top.h - setTo.y;
 
-			if( Math.abs( gap ) >= 1 ) {
-				blocks.top = null;
+			if(
+				Math.abs( gap ) >= 1 ||
+				( top.x > setTo.x + subject.w ) ||
+				( setTo.x > top.x + top.w )
+			) {
+				blocks.t = null;
 			}
 		}
 
-		if( blocks.left ) {
-			const left = blocks.left;
+		if( blocks.l ) {
+			const left = blocks.l;
 			const gap = left.x + left.w - setTo.x;
 
-			if( Math.abs( gap ) >= 1 ) {
-				blocks.left = null;
+			if(
+				Math.abs( gap ) >= 1 ||
+				( left.y > setTo.y + subject.h ) ||
+				( setTo.y > left.y + left.h )
+			) {
+				blocks.l = null;
 			}
 		}
 
-		if( blocks.right ) {
-			const right = blocks.right;
+		if( blocks.r ) {
+			const right = blocks.r;
 			const gap = right.x - setTo.x - subject.w;
 
-			if( Math.abs( gap ) >= 1 ) {
-				blocks.right = null;
+			if(
+				Math.abs( gap ) >= 1 ||
+				( right.y > setTo.y + subject.h ) ||
+				( setTo.y > right.y + right.h )
+			) {
+				blocks.r = null;
 			}
 		}
 
@@ -247,7 +263,7 @@ class Level {
 			if( !o.isStuck ) {
 				this.collisionDetection( o, o.nextPos );
 
-				if( o.blocks.bottom || o.blocks.top || o.blocks.left || o.blocks.right ) {
+				if( o.blocks.b || o.blocks.t || o.blocks.l || o.blocks.r ) {
 					o.isStuck = true;
 				}
 			}
@@ -256,23 +272,7 @@ class Level {
 		this.scenery.forEach( o => o.update( dt ) );
 
 		const dir = js13k.Input.getDirections();
-
 		this.collisionDetection( this.player, this.player.nextPos );
-		this.player.isOnGround = !!this.player.blocks.bottom;
-
-		if(
-			!this.player.isOnGround &&
-			( this.player.blocks.left || this.player.blocks.right )
-		) {
-			this.player.isOnWall = this.timer;
-
-			this.player.velocityX = 0;
-			this.player.velocityY = 0;
-		}
-
-		if( js13k.Input.isPressedKey( 'Space', true ) ) {
-			this.player.jump();
-		}
 
 		if( js13k.Input.isPressedKey( 'Enter', true ) ) {
 			this.throwItem( dir );

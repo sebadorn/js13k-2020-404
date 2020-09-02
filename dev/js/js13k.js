@@ -9,7 +9,7 @@ const js13k = {
 
 	// Config
 	GRAVITY: 1,
-	JUMP_VELOCITY: -24,
+	JUMP_VELOCITY: -12,
 	MAX_CANVAS_HEIGHT: 760,
 	MAX_VELOCITY_Y: 12,
 	TARGET_FPS: 60,
@@ -42,14 +42,14 @@ const js13k = {
 	 * @param  {number} b.y - Position on Y axis.
 	 * @return {boolean}
 	 */
-	overlapAABB( a, b ) {
+	overlap( a, b ) {
 		let overlapX = Math.min( a.x + a.w, b.x + b.w ) - Math.max( a.x, b.x );
 		overlapX = ( overlapX < 0 ) ? 0 : overlapX;
 
 		let overlapY = Math.min( a.y + a.h, b.y + b.h ) - Math.max( a.y, b.y );
 		overlapY = ( overlapY < 0 ) ? 0 : overlapY;
 
-		return ( overlapX * overlapY > 0 );
+		return ( overlapX * overlapY > Number.EPSILON );
 	}
 
 

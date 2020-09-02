@@ -52,6 +52,8 @@ class Character extends js13k.LevelObject {
 
 		// Decide if to draw the eye.
 		let drawEye = true;
+		const eyeOffsetY = this.dirY > 0 ? s : 0;
+		const eyeOffsetX = this.dirX < 0 ? s : s3;
 		const diff = this.progress - this.eyeBlink;
 
 		// Blinking (do not draw the eye).
@@ -90,12 +92,6 @@ class Character extends js13k.LevelObject {
 				// right leg
 				ctx.fillRect( this.x + s2, this.y + s6, s, s2 );
 			}
-
-			// eye
-			if( drawEye ) {
-				ctx.fillStyle = '#fff';
-				ctx.fillRect( this.x + s, this.y + s + yBop, s2, s2 );
-			}
 		}
 		// facing right
 		else {
@@ -120,12 +116,12 @@ class Character extends js13k.LevelObject {
 				// right leg
 				ctx.fillRect( this.x + s3, this.y + s6, s, s2 );
 			}
+		}
 
-			// eye
-			if( drawEye ) {
-				ctx.fillStyle = '#fff';
-				ctx.fillRect( this.x + s3, this.y + s + yBop, s2, s2 );
-			}
+		// eye
+		if( drawEye ) {
+			ctx.fillStyle = '#fff';
+			ctx.fillRect( this.x + eyeOffsetX, this.y + s + eyeOffsetY + yBop, s2, s2 );
 		}
 	}
 
@@ -135,18 +131,18 @@ class Character extends js13k.LevelObject {
 	 */
 	jump() {
 		if( this.isOnGround || this.isOnWall ) {
-			this.velocityY += js13k.JUMP_VELOCITY;
+			this.velocityY = js13k.JUMP_VELOCITY;
 			this.isOnGround = false;
 			this.isOnWall = 0;
 
-			if( this.isOnWall ) {
-				if( this.blocks.left ) {
-					this.velocityX -= js13k.JUMP_VELOCITY;
-				}
-				else if( this.blocks.right ) {
-					this.velocityX += js13k.JUMP_VELOCITY;
-				}
-			}
+			// if( this.isOnWall ) {
+			// 	if( this.blocks.l ) {
+			// 		this.velocityX -= js13k.JUMP_VELOCITY;
+			// 	}
+			// 	else if( this.blocks.r ) {
+			// 		this.velocityX += js13k.JUMP_VELOCITY;
+			// 	}
+			// }
 		}
 	}
 
@@ -167,15 +163,34 @@ class Character extends js13k.LevelObject {
 			this.dirY = dir.y < 0 ? -1 : 1;
 		}
 
+		this.isOnGround = !!this.blocks.b;
+		this.isWalking = false;
+
+		if(
+			!this.isOnGround &&
+			( this.blocks.l || this.blocks.r )
+		) {
+			if( !this.isOnWall ) {
+				this.isOnWall = this.progress;
+				this.velocityX = 0;
+				this.velocityY = 0;
+			}
+		}
+		else {
+			this.isOnWall = 0;
+		}
+
 		if( dir.x !== 0 ) {
 			this.dirX = dir.x < 0 ? -1 : 1;
 			this.frameX = this.frameX + dt * 0.2;
+
+			if( this.isOnGround ) {
+				this.isWalking = dir.x < 0 ? !this.blocks.l : !this.blocks.r;
+			}
 		}
 		else {
 			this.frameX = 0;
 		}
-
-		this.isWalking = this.isOnGround && dir.x !== 0;
 
 		if( !this.isOnWall ) {
 			this.velocityX = Math.round( dt * dir.x * this.speed );
@@ -183,6 +198,10 @@ class Character extends js13k.LevelObject {
 
 		if( !this.isOnGround && !this.isOnWall ) {
 			this.velocityY = Math.min( Math.round( this.velocityY + dt * js13k.GRAVITY ), js13k.MAX_VELOCITY_Y );
+		}
+
+		if( js13k.Input.isPressedKey( 'Space', true ) ) {
+			this.jump();
 		}
 
 		// Do not set the position just yet. We need the current and
