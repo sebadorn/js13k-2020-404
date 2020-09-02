@@ -17,15 +17,17 @@ class Character extends js13k.LevelObject {
 		super( x, y, 6 * size, 8 * size );
 
 		this.size = size;
-		this.speed = 16;
+		this.speed = 12;
 
 		this.eyeBlink = 0;
+		this.frameX = 0;
 
 		// These attributes exist, but are set in or after the collision
 		// detection. Commenting it out here to save some bytes.
 		//
 		// this.isOnGround = false;
 		// this.isOnWall = false;
+		// this.isWalking = false;
 	}
 
 
@@ -68,8 +70,26 @@ class Character extends js13k.LevelObject {
 		// facing left
 		if( this.dirX < 0 ) {
 			// legs
-			ctx.fillRect( this.x + s5, this.y + s6, s, s2 );
-			ctx.fillRect( this.x + s2, this.y + s6, s, s2 );
+			if( this.isWalking ) {
+				if( ~~this.frameX % 2 ) {
+					// left leg
+					ctx.fillRect( this.x + s5, this.y + s6, s, s2 );
+					// right leg
+					ctx.fillRect( this.x + s2, this.y + s6, s, s );
+				}
+				else {
+					// left leg
+					ctx.fillRect( this.x + s5, this.y + s6, s, s );
+					// right leg
+					ctx.fillRect( this.x + s2, this.y + s6, s, s2 );
+				}
+			}
+			else {
+				// left leg
+				ctx.fillRect( this.x + s5, this.y + s6, s, s2 );
+				// right leg
+				ctx.fillRect( this.x + s2, this.y + s6, s, s2 );
+			}
 
 			// eye
 			if( drawEye ) {
@@ -80,8 +100,26 @@ class Character extends js13k.LevelObject {
 		// facing right
 		else {
 			// legs
-			ctx.fillRect( this.x, this.y + s6, s, s2 );
-			ctx.fillRect( this.x + s3, this.y + s6, s, s2 );
+			if( this.isWalking ) {
+				if( ~~this.frameX % 2 ) {
+					// left leg
+					ctx.fillRect( this.x, this.y + s6, s, s );
+					// right leg
+					ctx.fillRect( this.x + s3, this.y + s6, s, s2 );
+				}
+				else {
+					// left leg
+					ctx.fillRect( this.x, this.y + s6, s, s2 );
+					// right leg
+					ctx.fillRect( this.x + s3, this.y + s6, s, s );
+				}
+			}
+			else {
+				// left leg
+				ctx.fillRect( this.x, this.y + s6, s, s2 );
+				// right leg
+				ctx.fillRect( this.x + s3, this.y + s6, s, s2 );
+			}
 
 			// eye
 			if( drawEye ) {
@@ -131,7 +169,13 @@ class Character extends js13k.LevelObject {
 
 		if( dir.x !== 0 ) {
 			this.dirX = dir.x < 0 ? -1 : 1;
+			this.frameX = this.frameX + dt * 0.2;
 		}
+		else {
+			this.frameX = 0;
+		}
+
+		this.isWalking = this.isOnGround && dir.x !== 0;
 
 		if( !this.isOnWall ) {
 			this.velocityX = Math.round( dt * dir.x * this.speed );
