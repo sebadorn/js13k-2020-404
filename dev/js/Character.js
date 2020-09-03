@@ -50,10 +50,16 @@ class Character extends js13k.LevelObject {
 			yBop = Math.round( ( Math.sin( this.progress * 0.05 ) + 1 ) * s * 0.1 );
 		}
 
+		let faceToLeft = this.dirX < 0;
+
+		if( this.isOnWall ) {
+			faceToLeft = !!this.blocks.r;
+		}
+
 		// Decide if to draw the eye.
 		let drawEye = true;
 		const eyeOffsetY = this.dirY > 0 ? s : 0;
-		const eyeOffsetX = this.dirX < 0 ? s : s3;
+		const eyeOffsetX = faceToLeft ? s : s3;
 		const diff = this.progress - this.eyeBlink;
 
 		// Blinking (do not draw the eye).
@@ -70,7 +76,7 @@ class Character extends js13k.LevelObject {
 		ctx.fillRect( this.x, this.y + yBop, s6, s6 );
 
 		// facing left
-		if( this.dirX < 0 ) {
+		if( faceToLeft ) {
 			// legs
 			if( this.isWalking ) {
 				if( ~~this.frameX % 2 ) {
@@ -131,18 +137,18 @@ class Character extends js13k.LevelObject {
 	 */
 	jump() {
 		if( this.isOnGround || this.isOnWall ) {
+			if( this.isOnWall ) {
+				if( this.blocks.l ) {
+					this.velocityX -= js13k.JUMP_VELOCITY;
+				}
+				else if( this.blocks.r ) {
+					this.velocityX += js13k.JUMP_VELOCITY;
+				}
+			}
+
 			this.velocityY = js13k.JUMP_VELOCITY;
 			this.isOnGround = false;
 			this.isOnWall = 0;
-
-			// if( this.isOnWall ) {
-			// 	if( this.blocks.l ) {
-			// 		this.velocityX -= js13k.JUMP_VELOCITY;
-			// 	}
-			// 	else if( this.blocks.r ) {
-			// 		this.velocityX += js13k.JUMP_VELOCITY;
-			// 	}
-			// }
 		}
 	}
 
