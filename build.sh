@@ -14,6 +14,7 @@ mkdir -p 'build/levels'
 mkdir -p 'build/ui'
 
 cp 'dev/index-dev.html' 'build/'
+cp 'dev/'*.gif 'build/'
 cp 'dev/js/'*.js 'build/'
 cp 'dev/js/levels/'*.js 'build/levels/'
 cp 'dev/js/ui/'*.js 'build/ui/'
@@ -39,7 +40,7 @@ $TERSER \
 	'Renderer.js' \
 	'UI.js' \
 	'ui/Text.js' \
-	--ecma 6 --warn \
+	--ecma 8 --warn \
 	--compress --toplevel \
 	--mangle \
 	-o 'i.js'
@@ -47,6 +48,7 @@ $TERSER \
 sed -i'' 's/^"use strict";//' 'i.js'
 
 rm 'index-dev.html'
+rm -rf 'levels' 'ui'
 find -type f -name '*.js' -not -name 'i.js' -delete
 
 # ZIP up everything needed.

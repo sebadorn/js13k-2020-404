@@ -9,6 +9,7 @@ js13k.Renderer = {
 
 	cnv: null,
 	ctx: null,
+	img: {},
 	inputUpdateInterval: 0,
 	last: 0,
 	level: null,
@@ -48,11 +49,11 @@ js13k.Renderer = {
 	 * Draw the pause screen.
 	 */
 	drawPause() {
-		this.ctx.fillStyle = '#F00';
+		this.ctx.fillStyle = '#111';
 		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 
 		this.ui_pause.centerX();
-		this.ui_pause.y = this.centerY - 80;
+		this.ui_pause.y = this.centerY;
 		this.ui_pause.draw( this.ctx );
 	},
 
@@ -66,11 +67,25 @@ js13k.Renderer = {
 		this.ctx = this.cnv.getContext( '2d', { alpha: false } );
 
 		this.ui_pause = new js13k.UI.Text(
-			'PAUSED', 'bold 42px sans-serif', [255, 255, 255], 0, 0, true
+			'PAUSED', 'bold 128px sans-serif', [162, 162, 162], 0, 0, true
 		);
 
 		this.registerEvents();
-		cb();
+		this.loadImages( cb );
+	},
+
+
+	/**
+	 * Load images for use on the canvas.
+	 * @param {function} cb
+	 */
+	loadImages( cb ) {
+		const img = new Image();
+		img.onload = () => {
+			this.img.s = img;
+			cb();
+		};
+		img.src = 's.gif';
 	},
 
 

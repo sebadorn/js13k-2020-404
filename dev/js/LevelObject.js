@@ -9,14 +9,16 @@ class LevelObject {
 	/**
 	 *
 	 * @constructor
-	 * @param {?number} x
-	 * @param {?number} y
-	 * @param {?number} w
-	 * @param {?number} h
-	 * @param {?string} color
+	 * @param {?number}  x
+	 * @param {?number}  y
+	 * @param {?number}  w
+	 * @param {?number}  h
+	 * @param {?string}  color
+	 * @param {?string}  topBorder
 	 */
-	constructor( x, y, w, h, color ) {
+	constructor( x, y, w, h, color, topBorder ) {
 		this.color = color || '#696a6a';
+		this.top = topBorder;
 
 		this.x = x;
 		this.y = y;
@@ -43,6 +45,11 @@ class LevelObject {
 	draw( ctx ) {
 		ctx.fillStyle = this.color;
 		ctx.fillRect( this.x, this.y, this.w, this.h );
+
+		if( this.top ) {
+			ctx.fillStyle = this.top;
+			ctx.fillRect( this.x, this.y, this.w, 6 );
+		}
 	}
 
 

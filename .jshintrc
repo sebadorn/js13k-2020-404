@@ -2,7 +2,7 @@
 	"browser": true,
 	"curly": true,
 	"elision": true,
-	"esversion": 6,
+	"esversion": 8,
 	"expr": true,
 	"globals": {
 		"js13k": true

@@ -210,11 +210,17 @@ class Level {
 	 * @param {CanvasRenderingContext2d} ctx
 	 */
 	draw( ctx ) {
+		const width = js13k.Renderer.cnv.width;
+		const height = js13k.Renderer.cnv.height;
+
 		// Center x axis on player.
-		const halfWidth = Math.round( js13k.Renderer.cnv.width / 2 );
+		const halfWidth = Math.round( width / 2 );
 		const offsetX = Math.min( 0, halfWidth - this.player.x );
 
 		ctx.setTransform( 1, 0, 0, 1, offsetX, 0 );
+
+		// Background image.
+		ctx.drawImage( js13k.Renderer.img.s, 0, 0, 32, 16, 0, 0, width, height );
 
 		this.scenery.forEach( o => o.draw( ctx ) );
 		this.objects.forEach( o => o.draw( ctx ) );
