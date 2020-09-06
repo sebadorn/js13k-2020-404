@@ -9,10 +9,10 @@ js13k.Renderer = {
 
 	cnv: null,
 	ctx: null,
-	img: {},
 	inputUpdateInterval: 0,
 	last: 0,
 	level: null,
+	sprite: null,
 
 
 	/**
@@ -71,7 +71,7 @@ js13k.Renderer = {
 		);
 
 		this.registerEvents();
-		this.loadImages( cb );
+		this.loadSprite( cb );
 	},
 
 
@@ -79,10 +79,10 @@ js13k.Renderer = {
 	 * Load images for use on the canvas.
 	 * @param {function} cb
 	 */
-	loadImages( cb ) {
+	loadSprite( cb ) {
 		const img = new Image();
 		img.onload = () => {
-			this.img.s = img;
+			this.sprite = img;
 			cb();
 		};
 		img.src = 's.gif';
@@ -97,10 +97,10 @@ js13k.Renderer = {
 		js13k.Input.update();
 
 		if( timestamp > 0 ) {
-			const diff = timestamp - this.last; // Time that passed between frames. [ms]
+			const timeElapsed = timestamp - this.last; // Time that passed between frames. [ms]
 
 			// Target speed of 60 FPS (=> 1000 / 60 ~= 16.667 [ms]).
-			const dt = js13k.TARGET_FPS * diff / 1000;
+			const dt = timeElapsed / ( 1000 / js13k.TARGET_FPS );
 
 			this.ctx.imageSmoothingEnabled = false;
 			this.ctx.lineWidth = 1;

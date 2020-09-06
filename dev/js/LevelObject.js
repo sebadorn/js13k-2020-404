@@ -16,7 +16,7 @@ class LevelObject {
 	 * @param {?string}  color
 	 * @param {?string}  topBorder
 	 */
-	constructor( x, y, w, h, color, topBorder ) {
+	constructor( level, x, y, w, h, color, topBorder ) {
 		this.color = color || '#696a6a';
 		this.top = topBorder;
 
@@ -33,8 +33,8 @@ class LevelObject {
 
 		this.blocks = {};
 		this.collision = true;
+		this.level = level;
 		this.nextPos = { x, y };
-		this.progress = 0;
 	}
 
 
@@ -58,7 +58,7 @@ class LevelObject {
 	 * @param {number} dt
 	 */
 	update( dt ) {
-		this.progress += dt;
+		// pass
 	}
 
 

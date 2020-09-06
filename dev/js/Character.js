@@ -9,12 +9,13 @@ class Character extends js13k.LevelObject {
 	/**
 	 *
 	 * @constructor
-	 * @param {number} x
-	 * @param {number} y
-	 * @param {number} size
+	 * @param {js13k.Level} level
+	 * @param {number}      x
+	 * @param {number}      y
+	 * @param {number}      size
 	 */
-	constructor( x, y, size ) {
-		super( x, y, 6 * size, 8 * size );
+	constructor( level, x, y, size ) {
+		super( level, x, y, 6 * size, 8 * size );
 
 		this.size = size;
 		this.speed = 12;
@@ -47,7 +48,7 @@ class Character extends js13k.LevelObject {
 		let yBop = 0;
 
 		if( this.isOnGround && !this.isOnWall ) {
-			yBop = Math.round( ( Math.sin( this.progress * 0.05 ) + 1 ) * s * 0.1 );
+			yBop = Math.round( ( Math.sin( this.level.timer * 0.05 ) + 1 ) * s * 0.1 );
 		}
 
 		let faceToLeft = this.dirX < 0;
@@ -60,7 +61,7 @@ class Character extends js13k.LevelObject {
 		let drawEye = true;
 		const eyeOffsetY = this.dirY > 0 ? s : 0;
 		const eyeOffsetX = faceToLeft ? s : s3;
-		const diff = this.progress - this.eyeBlink;
+		const diff = this.level.timer - this.eyeBlink;
 
 		// Blinking (do not draw the eye).
 		if( diff < 0.1 * js13k.TARGET_FPS ) {
@@ -68,7 +69,7 @@ class Character extends js13k.LevelObject {
 		}
 		// Cooldown until next blink.
 		else if( diff >= 6 * js13k.TARGET_FPS ) {
-			this.eyeBlink = this.progress;
+			this.eyeBlink = this.level.timer;
 		}
 
 		// torso/head
@@ -177,7 +178,7 @@ class Character extends js13k.LevelObject {
 			( this.blocks.l || this.blocks.r )
 		) {
 			if( !this.isOnWall ) {
-				this.isOnWall = this.progress;
+				this.isOnWall = this.level.timer;
 				this.velocityX = 0;
 				this.velocityY = 0;
 			}
@@ -199,7 +200,7 @@ class Character extends js13k.LevelObject {
 		}
 
 		if( !this.isOnWall ) {
-			this.velocityX = Math.round( dt * dir.x * this.speed );
+			this.velocityX = Math.round( dir.x * this.speed );
 		}
 
 		if( !this.isOnGround && !this.isOnWall ) {
@@ -213,8 +214,8 @@ class Character extends js13k.LevelObject {
 		// Do not set the position just yet. We need the current and
 		// projected next position for collision detection. The collision
 		// detection will then set the correct position.
-		this.nextPos.x = this.x + this.velocityX;
-		this.nextPos.y = this.y + this.velocityY;
+		this.nextPos.x = this.x + dt * this.velocityX;
+		this.nextPos.y = this.y + dt * this.velocityY;
 	}
 
 

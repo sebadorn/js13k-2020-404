@@ -21,6 +21,41 @@ class Level {
 		this.scenery = [];
 
 		this.timer = 0;
+
+		// this.goal = null;
+		// this.player = null;
+
+		// Level states:
+		// 0 - In play. (Pausing is handled outside in Renderer.)
+		// 1 - Finished with success.
+		// 2 - Finished with game over.
+		//
+		// this.state = 0;
+	}
+
+
+	/**
+	 * Check if player has reached the goal.
+	 */
+	checkGoal() {
+		if( !this.goal || this.state > 0 ) {
+			return;
+		}
+
+		const goal = {
+			x: this.goal[0],
+			y: this.goal[1],
+			w: this.goal[2],
+			h: this.goal[3]
+		};
+
+		if(
+			this.player.x > goal.x &&
+			this.player.x + this.player.w < goal.x + goal.w &&
+			js13k.overlap( this.player, goal )
+		) {
+			this.state = 1;
+		}
 	}
 
 
@@ -220,7 +255,7 @@ class Level {
 		ctx.setTransform( 1, 0, 0, 1, offsetX, 0 );
 
 		// Background image.
-		ctx.drawImage( js13k.Renderer.img.s, 0, 0, 32, 16, 0, 0, width, height );
+		ctx.drawImage( js13k.Renderer.sprite, 0, 0, 32, 16, 0, 0, width, height );
 
 		this.scenery.forEach( o => o.draw( ctx ) );
 		this.objects.forEach( o => o.draw( ctx ) );
@@ -228,6 +263,20 @@ class Level {
 
 		if( this.player ) {
 			this.player.draw( ctx );
+		}
+
+		this.drawGoal( ctx );
+	}
+
+
+	/**
+	 *
+	 * @param {CanvasRenderingContext2d} ctx
+	 */
+	drawGoal( ctx ) {
+		if( this.goal ) {
+			ctx.fillStyle = '#8BBADCA0';
+			ctx.fillRect( ...this.goal );
 		}
 	}
 
@@ -259,6 +308,11 @@ class Level {
 	 */
 	update( dt ) {
 		this.timer += dt;
+
+		if( this.state > 0 ) {
+			return;
+		}
+
 		this.allPhysical = this.objects.concat( this.items );
 
 		this.objects.forEach( o => o.update( dt ) );
@@ -285,6 +339,12 @@ class Level {
 		}
 
 		this.player.update( dt, dir );
+
+		if( this.player.y > 999 ) {
+			this.state = 2;
+		}
+
+		this.checkGoal();
 	}
 
 
