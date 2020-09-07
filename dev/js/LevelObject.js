@@ -9,32 +9,48 @@ class LevelObject {
 	/**
 	 *
 	 * @constructor
-	 * @param {?number}  x
-	 * @param {?number}  y
-	 * @param {?number}  w
-	 * @param {?number}  h
-	 * @param {?string}  color
-	 * @param {?string}  topBorder
+	 * @param {object}   data
+	 * @param {?string}  data.color
+	 * @param {?number} [data.t = 0]
+	 * @param {?number} [data.x = 0]
+	 * @param {?number} [data.y = 0]
+	 * @param {?number} [data.w = 0]
+	 * @param {?number} [data.h = 0]
 	 */
-	constructor( level, x, y, w, h, color, topBorder ) {
-		this.color = color || '#696a6a';
-		this.top = topBorder;
+	constructor( level, data ) {
+		// Platform type. (If LevelObject is used as platform.)
+		// 0: crumbling platform
+		// 1: crumbling platform, but you cannot stand on the top area
+		// 2: pillar
+		this.type = data.t || 0;
 
-		this.x = x;
-		this.y = y;
-		this.w = w;
-		this.h = h;
+		if( this.type === 1 ) {
+			this.top = '#8f9552';
+		}
+
+		this.color = data.color || '#696a6a';
+
+		this.x = data.x || 0;
+		this.y = data.y || 0;
+		this.w = data.w || 0;
+		this.h = data.h || 0;
+		this.xe = this.x + this.w; // x end
+		this.ye = this.y + this.h; // y end
 
 		this.dirX = 0;
 		this.dirY = 0;
 
-		this.velocityX = 0;
-		this.velocityY = 0;
+		// Velocity
+		this.velX = 0;
+		this.velY = 0;
 
 		this.blocks = {};
 		this.collision = true;
 		this.level = level;
-		this.nextPos = { x, y };
+		this.nextPos = {
+			x: this.x,
+			y: this.y
+		};
 	}
 
 

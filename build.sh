@@ -35,7 +35,6 @@ $TERSER \
 	'Level.js' \
 	'LevelObject.js' \
 	'Character.js' \
-	'Item.js' \
 	'levels/Intro.js' \
 	'Renderer.js' \
 	'UI.js' \

@@ -15,7 +15,7 @@ class Character extends js13k.LevelObject {
 	 * @param {number}      size
 	 */
 	constructor( level, x, y, size ) {
-		super( level, x, y, 6 * size, 8 * size );
+		super( level, { x, y, w: 6 * size, h: 8 * size } );
 
 		this.size = size;
 		this.speed = 12;
@@ -140,14 +140,14 @@ class Character extends js13k.LevelObject {
 		if( this.isOnGround || this.isOnWall ) {
 			if( this.isOnWall ) {
 				if( this.blocks.l ) {
-					this.velocityX -= js13k.JUMP_VELOCITY;
+					this.velX -= js13k.JUMP_VELOCITY;
 				}
 				else if( this.blocks.r ) {
-					this.velocityX += js13k.JUMP_VELOCITY;
+					this.velX += js13k.JUMP_VELOCITY;
 				}
 			}
 
-			this.velocityY = js13k.JUMP_VELOCITY;
+			this.velY = js13k.JUMP_VELOCITY;
 			this.isOnGround = false;
 			this.isOnWall = 0;
 		}
@@ -179,8 +179,8 @@ class Character extends js13k.LevelObject {
 		) {
 			if( !this.isOnWall ) {
 				this.isOnWall = this.level.timer;
-				this.velocityX = 0;
-				this.velocityY = 0;
+				this.velX = 0;
+				this.velY = 0;
 			}
 		}
 		else {
@@ -200,11 +200,11 @@ class Character extends js13k.LevelObject {
 		}
 
 		if( !this.isOnWall ) {
-			this.velocityX = Math.round( dir.x * this.speed );
+			this.velX = Math.round( dir.x * this.speed );
 		}
 
 		if( !this.isOnGround && !this.isOnWall ) {
-			this.velocityY = Math.min( Math.round( this.velocityY + dt * js13k.GRAVITY ), js13k.MAX_VELOCITY_Y );
+			this.velY = Math.min( Math.round( this.velY + dt * js13k.GRAVITY ), js13k.MAX_VELOCITY_Y );
 		}
 
 		if( js13k.Input.isPressedKey( 'Space', true ) ) {
@@ -214,8 +214,8 @@ class Character extends js13k.LevelObject {
 		// Do not set the position just yet. We need the current and
 		// projected next position for collision detection. The collision
 		// detection will then set the correct position.
-		this.nextPos.x = this.x + dt * this.velocityX;
-		this.nextPos.y = this.y + dt * this.velocityY;
+		this.nextPos.x = this.x + dt * this.velX;
+		this.nextPos.y = this.y + dt * this.velY;
 	}
 
 

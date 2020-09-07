@@ -112,8 +112,8 @@ class Level {
 		const blocks = subject.blocks;
 
 		// Iterate all objects.
-		for( let i = 0; i < this.allPhysical.length; i++ ) {
-			const o = this.allPhysical[i];
+		for( let i = 0; i < this.objects.length; i++ ) {
+			const o = this.objects[i];
 
 			if( o === subject || !o.collision ) {
 				continue;
@@ -254,51 +254,78 @@ class Level {
 
 		ctx.setTransform( 1, 0, 0, 1, offsetX, 0 );
 
-		// Background image.
-		ctx.drawImage( js13k.Renderer.sprite, 0, 0, 32, 16, 0, 0, width, height );
+		// Background image. Repeat as often as necessary to fill the screen.
+		const tile = 752;
+		const offsetTop = height - tile;
+		const bgWidth = tile * 2;
 
-		this.scenery.forEach( o => o.draw( ctx ) );
-		this.objects.forEach( o => o.draw( ctx ) );
-		this.items.forEach( o => o.draw( ctx ) );
+		let repeat = Math.ceil( width / bgWidth );
+		const bgOffsetFactor = Math.floor( -( offsetX + offsetX ) / bgWidth );
+
+		while( repeat-- >= 0 ) {
+			ctx.drawImage(
+				js13k.Renderer.sprite,
+				// Part of the original image to use.
+				0, 0, 32, 16,
+				// Where and how big to paint it on the canvas.
+				( bgOffsetFactor + repeat ) * bgWidth, offsetTop, bgWidth, tile
+			);
+		}
+
+		this.scenery.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
+		this.objects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
+		this.items.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
 
 		if( this.player ) {
 			this.player.draw( ctx );
 		}
 
-		this.drawGoal( ctx );
+		this.drawGoal( ctx, -offsetX, width );
 	}
 
 
 	/**
 	 *
 	 * @param {CanvasRenderingContext2d} ctx
+	 * @param {number}                   areaX
+	 * @param {number}                   areaWidth
 	 */
-	drawGoal( ctx ) {
-		if( this.goal ) {
-			ctx.fillStyle = '#8BBADCA0';
-			ctx.fillRect( ...this.goal );
+	drawGoal( ctx, areaX, areaWidth ) {
+		if( !this.goal ) {
+			return;
 		}
+
+		const goalX = this.goal[0];
+		const goalW = this.goal[2];
+
+		if(
+			goalX > areaX + areaWidth || // outside the viewport to the right
+			goalX + goalW < areaX // outside the viewport to the left
+		) {
+			return;
+		}
+
+		ctx.fillStyle = '#8BBADCA0';
+		ctx.fillRect( goalX, this.goal[1], goalW, this.goal[3] );
 	}
 
 
 	/**
-	 *
-	 * @param {object} dir
-	 * @param {number} dir.x
-	 * @param {number} dir.y
+	 * Draw an object only if it is inside the visible viewport area.
+	 * @param {CanvasRenderingContext2d} ctx
+	 * @param {number}                   areaX
+	 * @param {number}                   areaWidth
+	 * @param {js13k.LevelObject}        o
 	 */
-	throwItem( dir ) {
-		const item = new js13k.Item( this.player.x, this.player.y, 40, 14 );
-		item.color = '#F90';
-
-		if( dir.x === 0 && dir.y === 0 ) {
-			dir.x = this.player.dirX || 1;
+	drawIfVisible( ctx, areaX, areaWidth, o ) {
+		if(
+			o.x > areaX + areaWidth || // outside the viewport to the right
+			o.xe < areaX // outside the viewport to the left
+		) {
+			return;
 		}
 
-		item.velocityX += dir.x * 20;
-		item.velocityY += dir.y * 20;
-
-		this.items.push( item );
+		o.draw( ctx );
 	}
 
 
@@ -313,30 +340,11 @@ class Level {
 			return;
 		}
 
-		this.allPhysical = this.objects.concat( this.items );
-
 		this.objects.forEach( o => o.update( dt ) );
-
-		this.items.forEach( o => {
-			o.update( dt );
-
-			if( !o.isStuck ) {
-				this.collisionDetection( o, o.nextPos );
-
-				if( o.blocks.b || o.blocks.t || o.blocks.l || o.blocks.r ) {
-					o.isStuck = true;
-				}
-			}
-		} );
-
 		this.scenery.forEach( o => o.update( dt ) );
 
 		const dir = js13k.Input.getDirections();
 		this.collisionDetection( this.player, this.player.nextPos );
-
-		if( js13k.Input.isPressedKey( 'Enter', true ) ) {
-			this.throwItem( dir );
-		}
 
 		this.player.update( dt, dir );
 
