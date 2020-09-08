@@ -20,15 +20,16 @@ class Level {
 		// Purely optical, no interaction.
 		this.scenery = [];
 
+		this.limits = [0, Infinity];
 		this.timer = 0;
 
+		// this.checkPoint = null;
 		// this.goal = null;
 		// this.player = null;
 
 		// Level states:
 		// 0 - In play. (Pausing is handled outside in Renderer.)
 		// 1 - Finished with success.
-		// 2 - Finished with game over.
 		//
 		// this.state = 0;
 	}
@@ -55,6 +56,7 @@ class Level {
 			js13k.overlap( this.player, goal )
 		) {
 			this.state = 1;
+			this.onGoal();
 		}
 	}
 
@@ -115,7 +117,7 @@ class Level {
 		for( let i = 0; i < this.objects.length; i++ ) {
 			const o = this.objects[i];
 
-			if( o === subject || !o.collision ) {
+			if( o === subject || !o.collision || o.gone ) {
 				continue;
 			}
 
@@ -250,7 +252,7 @@ class Level {
 
 		// Center x axis on player.
 		const halfWidth = Math.round( width / 2 );
-		const offsetX = Math.min( 0, halfWidth - this.player.x );
+		const offsetX = Math.min( this.limits[0], Math.max( -this.limits[1], halfWidth - this.player.x ) );
 
 		ctx.setTransform( 1, 0, 0, 1, offsetX, 0 );
 
@@ -330,6 +332,47 @@ class Level {
 
 
 	/**
+	 * Reset the player to the last check point.
+	 */
+	resetToCheckPoint() {
+		if( !this.checkPoint ) {
+			return;
+		}
+
+		const block = this.checkPoint;
+		const player = this.player;
+
+		player.x = block.x + block.w - player.w - 16;
+		player.y = block.y - player.h - 1;
+
+		player.nextPos.x = player.x;
+		player.nextPos.y = player.y;
+
+		player.velX = 0;
+		player.velY = 0;
+
+		// Reset platforms.
+		this.objects.forEach( o => {
+			o.gone = false;
+			o.isCrumbling = 0;
+		} );
+	}
+
+
+	/**
+	 *
+	 * @param {js13k.LevelObject} block
+	 */
+	setCheckPoint( block ) {
+		if( !block || block.type !== 2 ) {
+			return;
+		}
+
+		this.checkPoint = block;
+	}
+
+
+	/**
 	 *
 	 * @param {number} dt
 	 */
@@ -348,8 +391,22 @@ class Level {
 
 		this.player.update( dt, dir );
 
-		if( this.player.y > 999 ) {
-			this.state = 2;
+		// Player fell, reset to last checkpoint.
+		if( this.player.y > 1000 ) {
+			this.resetToCheckPoint();
+			return;
+		}
+
+		const blocks = this.player.blocks;
+
+		if( this.player.isOnGround && blocks.b ) {
+			this.setCheckPoint( blocks.b );
+			blocks.b.crumble();
+		}
+
+		if( this.player.isOnWall ) {
+			blocks.l && blocks.l.crumble();
+			blocks.r && blocks.r.crumble();
 		}
 
 		this.checkGoal();

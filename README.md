@@ -7,8 +7,3 @@ Theme: **404**
 ## Description
 
 ...
-
-
-## Third-party libraries
-
-* ...

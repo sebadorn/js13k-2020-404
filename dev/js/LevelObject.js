@@ -22,13 +22,20 @@ class LevelObject {
 		// 0: crumbling platform
 		// 1: crumbling platform, but you cannot stand on the top area
 		// 2: pillar
+		// 3: scenery
 		this.type = data.t || 0;
 
-		if( this.type === 1 ) {
+		if( this.type === 0 ) {
 			this.top = '#8f9552';
 		}
+		else if( this.type === 2 ) {
+			this.color = '#909090';
+		}
+		else if( this.type === 3 ) {
+			this.color = '#a7b9c8';
+		}
 
-		this.color = data.color || '#696a6a';
+		this.color = data.color || this.color || '#696a6a';
 
 		this.x = data.x || 0;
 		this.y = data.y || 0;
@@ -51,6 +58,23 @@ class LevelObject {
 			x: this.x,
 			y: this.y
 		};
+
+		// this.gone = false;
+		// this.isCrumbling = 0;
+	}
+
+
+	/**
+	 *
+	 */
+	crumble() {
+		if( this.type !== 0 && this.type !== 1 ) {
+			return;
+		}
+
+		if( !this.isCrumbling ) {
+			this.isCrumbling = this.level.timer;
+		}
 	}
 
 
@@ -59,6 +83,10 @@ class LevelObject {
 	 * @param {CanvasRenderingContext2d} ctx
 	 */
 	draw( ctx ) {
+		if( this.gone ) {
+			return;
+		}
+
 		ctx.fillStyle = this.color;
 		ctx.fillRect( this.x, this.y, this.w, this.h );
 
@@ -74,7 +102,18 @@ class LevelObject {
 	 * @param {number} dt
 	 */
 	update( dt ) {
-		// pass
+		if( this.isCrumbling && !this.gone ) {
+			const diff = this.level.timer - this.isCrumbling;
+			const percent = diff / ( 6 * js13k.TARGET_FPS );
+
+			if( percent >= 1 ) {
+				this.gone = true;
+			}
+			else {
+				// TODO: reduce height
+				// TODO: have crumbling animation -> small blocks falling off
+			}
+		}
 	}
 
 
