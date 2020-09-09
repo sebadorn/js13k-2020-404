@@ -9,7 +9,6 @@ js13k.Renderer = {
 
 	cnv: null,
 	ctx: null,
-	inputUpdateInterval: 0,
 	last: 0,
 	level: null,
 	sprite: null,
@@ -20,9 +19,6 @@ js13k.Renderer = {
 	 * @param {js13k.Level} level
 	 */
 	changeLevel( level ) {
-		js13k.Input.off( 'gp_connect' );
-		js13k.Input.off( 'gp_disconnect' );
-
 		this.level = level;
 	},
 
@@ -52,9 +48,10 @@ js13k.Renderer = {
 		this.ctx.fillStyle = '#111';
 		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 
-		this.ui_pause.centerX();
-		this.ui_pause.y = this.centerY;
-		this.ui_pause.draw( this.ctx );
+		this.ctx.fillStyle = 'rgba(162, 162, 162)';
+		this.ctx.font = 'bold 128px sans-serif';
+		this.ctx.textAlign = 'center';
+		this.ctx.fillText( 'PAUSED', this.centerX, this.centerY );
 	},
 
 
@@ -65,10 +62,6 @@ js13k.Renderer = {
 	init( cb ) {
 		this.cnv = document.getElementById( 'c' );
 		this.ctx = this.cnv.getContext( '2d', { alpha: false } );
-
-		this.ui_pause = new js13k.UI.Text(
-			'PAUSED', 'bold 128px sans-serif', [162, 162, 162], 0, 0, true
-		);
 
 		this.registerEvents();
 		this.loadSprite( cb );
@@ -96,7 +89,7 @@ js13k.Renderer = {
 	mainLoop( timestamp = 0 ) {
 		js13k.Input.update();
 
-		if( timestamp > 0 ) {
+		if( timestamp && this.last ) {
 			const timeElapsed = timestamp - this.last; // Time that passed between frames. [ms]
 
 			// Target speed of 60 FPS (=> 1000 / 60 ~= 16.667 [ms]).
@@ -127,52 +120,74 @@ js13k.Renderer = {
 	/**
 	 *
 	 */
+	pause() {
+		this.isPaused = true;
+	},
+
+
+	/**
+	 *
+	 */
 	registerEvents() {
-		window.addEventListener( 'resize', () => this.resize() );
+		window.addEventListener( 'resize', ev => this.resize( ev ) );
 		this.resize();
 
-		const keysEscape = js13k.Input.getKeysForAction( js13k.Input.ACTION.ESC );
+		const keys = js13k.Input.getKeysForAction( js13k.Input.ACTION.PAUSE );
 
-		js13k.Input.onKeyUp( 'Escape', () => {
-			if( this.isPaused ) {
-				this.unpause();
-			}
-			else {
-				this.isPaused = true;
+		setInterval(
+			() => {
+				// Inputs are not updated if main loop is not running.
+				if( this.isPaused ) {
+					js13k.Input.update();
+				}
 
-				// Keep on updating the inputs (gamepads), but much slower.
-				this.inputUpdateInterval = setInterval(
-					() => {
-						js13k.Input.update();
+				keys.gamepad.forEach( key => {
+					if( js13k.Input.isPressedGamepad( key, true ) ) {
+						this.togglePause();
+					}
+				} );
+			},
+			100
+		);
 
-						for( const key of keysEscape.gamepad ) {
-							if( js13k.Input.isPressedGamepad( key ) ) {
-								this.unpause();
-								return;
-							}
-						}
-					},
-					500
-				);
-			}
-		} );
+		const cbPause = () => this.togglePause();
+		keys.keyboard.forEach( key => js13k.Input.onKeyUp( key, cbPause ) );
+
+		js13k.Input.on( 'gp_disconnect', () => this.pause() );
 	},
 
 
 	/**
 	 * Resize the canvas.
+	 * @param {?Event} ev
 	 */
-	resize() {
-		const diff = window.innerHeight - js13k.MAX_CANVAS_HEIGHT;
+	resize( ev ) {
+		if( ev ) {
+			this.pause();
+		}
 
-		this.cnv.height = window.innerHeight - diff;
+		this.cnv.height = Math.min( window.innerHeight, js13k.MAX_CANVAS_HEIGHT );
 		this.cnv.width = window.innerWidth;
 
 		this.centerX = Math.round( this.cnv.width / 2 );
 		this.centerY = Math.round( this.cnv.height / 2 );
 
 		if( this.isPaused ) {
-			this.drawPause();
+			clearTimeout( this._timeoutDrawPause );
+			this._timeoutDrawPause = setTimeout( () => this.drawPause(), 100 );
+		}
+	},
+
+
+	/**
+	 *
+	 */
+	togglePause() {
+		if( this.isPaused ) {
+			this.unpause();
+		}
+		else {
+			this.pause();
 		}
 	},
 
@@ -182,7 +197,6 @@ js13k.Renderer = {
 	 */
 	unpause() {
 		if( this.isPaused ) {
-			clearInterval( this.inputUpdateInterval );
 			this.isPaused = false;
 			this.mainLoop();
 		}

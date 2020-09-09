@@ -8,18 +8,13 @@ js13k.Input = {
 
 
 	ACTION: {
-		ESC: 1,
-		INTERACT: 2,
+		PAUSE: 1,
+		JUMP: 2,
 
 		LEFT: 10,
 		UP: 11,
 		RIGHT: 12,
-		DOWN: 13,
-
-		FIGHT_1: 20,
-		FIGHT_2: 21,
-		FIGHT_3: 22,
-		FIGHT_4: 23
+		DOWN: 13
 	},
 
 	// 1: Keyboard
@@ -47,45 +42,29 @@ js13k.Input = {
 	 */
 	buildActionKeyMap() {
 		this.ACTION_KEY_MAP = {
-			[this.ACTION.ESC]: {
+			[this.ACTION.PAUSE]: {
 				keyboard: ['Escape'],
 				gamepad: [9]
-			},
-			[this.ACTION.INTERACT]: {
-				keyboard: ['Enter', 'KeyE'],
-				gamepad: [0]
 			},
 			[this.ACTION.LEFT]: {
 				keyboard: ['ArrowLeft'],
 				gamepad: [14]
 			},
-			[this.ACTION.FIGHT_4]: {
-				keyboard: ['ArrowLeft', 'KeyA'],
-				gamepad: [this.isLinuxFirefox ? 3 : 2, 14]
-			},
 			[this.ACTION.UP]: {
 				keyboard: ['ArrowUp'],
 				gamepad: [12]
-			},
-			[this.ACTION.FIGHT_3]: {
-				keyboard: ['ArrowUp', 'KeyW'],
-				gamepad: [this.isLinuxFirefox ? 2 : 3, 12]
 			},
 			[this.ACTION.RIGHT]: {
 				keyboard: ['ArrowRight'],
 				gamepad: [15]
 			},
-			[this.ACTION.FIGHT_2]: {
-				keyboard: ['ArrowRight', 'KeyD'],
-				gamepad: [1, 15]
-			},
 			[this.ACTION.DOWN]: {
 				keyboard: ['ArrowDown'],
 				gamepad: [13]
 			},
-			[this.ACTION.FIGHT_1]: {
-				keyboard: ['ArrowDown', 'KeyS'],
-				gamepad: [0, 13]
+			[this.ACTION.JUMP]: {
+				keyboard: ['Space', 'ArrowUp'],
+				gamepad: [0, 12]
 			}
 		};
 	},
@@ -111,6 +90,28 @@ js13k.Input = {
 		}
 		else if( this.isPressed( this.ACTION.DOWN ) ) {
 			y = 1;
+		}
+
+		if( !x || !y ) {
+			const threshold = 0.3;
+
+			for( const index in this.gamepads ) {
+				const gp = this.gamepads[index];
+
+				if( gp.axes[0] && Math.abs( gp.axes[0] ) > threshold ) {
+					x = ( gp.axes[0] > 0 ) ? 1 : -1;
+				}
+				else if( gp.axes[2] && Math.abs( gp.axes[2] ) > threshold ) {
+					x = ( gp.axes[2] > 0 ) ? 1 : -1;
+				}
+
+				if( gp.axes[1] && Math.abs( gp.axes[1] ) > threshold ) {
+					y = ( gp.axes[1] > 0 ) ? 1 : -1;
+				}
+				else if( gp.axes[3] && Math.abs( gp.axes[3] ) > threshold ) {
+					y = ( gp.axes[3] > 0 ) ? 1 : -1;
+				}
+			}
 		}
 
 		return { x, y };
@@ -165,10 +166,7 @@ js13k.Input = {
 		// Also check axes.
 		// Has to be done as workaround for Firefox.
 		// @see https://bugzilla.mozilla.org/show_bug.cgi?id=1464940
-		if(
-			action === this.ACTION.LEFT ||
-			action === this.ACTION.FIGHT_4
-		) {
+		if( action === this.ACTION.LEFT ) {
 			for( const index in this.gamepads ) {
 				const gp = this.gamepads[index];
 
@@ -185,10 +183,7 @@ js13k.Input = {
 				}
 			}
 		}
-		else if(
-			action === this.ACTION.RIGHT ||
-			action === this.ACTION.FIGHT_2
-		) {
+		else if( action === this.ACTION.RIGHT ) {
 			for( const index in this.gamepads ) {
 				const gp = this.gamepads[index];
 
@@ -207,7 +202,7 @@ js13k.Input = {
 		}
 		else if(
 			action === this.ACTION.UP ||
-			action === this.ACTION.FIGHT_3
+			action === this.ACTION.JUMP
 		) {
 			for( const index in this.gamepads ) {
 				const gp = this.gamepads[index];
@@ -225,10 +220,7 @@ js13k.Input = {
 				}
 			}
 		}
-		else if(
-			action === this.ACTION.DOWN ||
-			action === this.ACTION.FIGHT_1
-		) {
+		else if( action === this.ACTION.DOWN ) {
 			for( const index in this.gamepads ) {
 				const gp = this.gamepads[index];
 

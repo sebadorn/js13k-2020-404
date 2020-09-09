@@ -17,8 +17,9 @@ class Character extends js13k.LevelObject {
 	constructor( level, x, y, size ) {
 		super( level, { x, y, w: 6 * size, h: 8 * size } );
 
+		this.dirX = 1;
 		this.size = size;
-		this.speed = 12;
+		this.speed = 10;
 
 		this.eyeBlink = 0;
 		this.frameX = 0;
@@ -29,6 +30,50 @@ class Character extends js13k.LevelObject {
 		// this.isOnGround = false;
 		// this.isOnWall = false;
 		// this.isWalking = false;
+	}
+
+
+	/**
+	 *
+	 * @private
+	 * @param {number}  dt
+	 * @param {number}  dirX
+	 * @param {boolean} isJumpingUp
+	 */
+	_updateFrameState( dt, dirX, isJumpingUp ) {
+		if( !isJumpingUp && dirX ) {
+			this.frameX += dt * 0.2;
+		}
+		else {
+			this.frameX = 0;
+		}
+	}
+
+
+	/**
+	 *
+	 * @private
+	 * @param {number} dt
+	 * @param {object} dir
+	 * @param {number} dir.x
+	 */
+	_updateVelocity( dt, dir ) {
+		if( !this.isOnWall && this.isOnGround ) {
+			this.velX = dir.x * this.speed;
+		}
+
+		if( !this.isOnGround && !this.isOnWall ) {
+			this.velY = Math.min( this.velY + dt * js13k.GRAVITY, js13k.MAX_VELOCITY_Y );
+		}
+	}
+
+
+	/**
+	 *
+	 * @return {boolean}
+	 */
+	canJump() {
+		return this.isOnGround || this.isOnWall;
 	}
 
 
@@ -93,6 +138,10 @@ class Character extends js13k.LevelObject {
 					ctx.fillRect( this.x + s2, this.y + s6, s, s2 );
 				}
 			}
+			else if( this.isOnWall ) {
+				// legs
+				ctx.fillRect( this.x + s5, this.y + s6, s, s2 );
+			}
 			else {
 				// left leg
 				ctx.fillRect( this.x + s5, this.y + s6, s, s2 );
@@ -117,6 +166,10 @@ class Character extends js13k.LevelObject {
 					ctx.fillRect( this.x + s3, this.y + s6, s, s );
 				}
 			}
+			else if( this.isOnWall ) {
+				// legs
+				ctx.fillRect( this.x, this.y + s6, s, s2 );
+			}
 			else {
 				// left leg
 				ctx.fillRect( this.x, this.y + s6, s, s2 );
@@ -135,22 +188,38 @@ class Character extends js13k.LevelObject {
 
 	/**
 	 *
+	 * @return {boolean}
+	 */
+	isJumpingUp() {
+		return !this.isOnGround && !this.isOnWall && this.velY < 0;
+	}
+
+
+	/**
+	 *
 	 */
 	jump() {
-		if( this.isOnGround || this.isOnWall ) {
-			if( this.isOnWall ) {
-				if( this.blocks.l ) {
-					this.velX -= js13k.JUMP_VELOCITY;
-				}
-				else if( this.blocks.r ) {
-					this.velX += js13k.JUMP_VELOCITY;
-				}
+		if( this.isOnWall ) {
+			if( this.blocks.l ) {
+				this.velX -= js13k.JUMP_VELOCITY / 2;
+				this.dirX = -1;
 			}
-
-			this.velY = js13k.JUMP_VELOCITY;
-			this.isOnGround = false;
-			this.isOnWall = 0;
+			else if( this.blocks.r ) {
+				this.velX += js13k.JUMP_VELOCITY / 2;
+				this.dirX = 1;
+			}
 		}
+		else {
+			this.level.spawnEffect( 2, {
+				x: this.x + ( this.dirX < 0 ? this.w : 0 ),
+				y: this.y + this.h,
+				dir: this.dirX
+			} );
+		}
+
+		this.velY = js13k.JUMP_VELOCITY;
+		this.isOnGround = false;
+		this.isOnWall = 0;
 	}
 
 
@@ -187,35 +256,28 @@ class Character extends js13k.LevelObject {
 			this.isOnWall = 0;
 		}
 
-		if( dir.x !== 0 ) {
+		const isJumpingUp = this.isJumpingUp();
+
+		if( !isJumpingUp && dir.x !== 0 ) {
 			this.dirX = dir.x < 0 ? -1 : 1;
-			this.frameX = this.frameX + dt * 0.2;
 
 			if( this.isOnGround ) {
 				this.isWalking = dir.x < 0 ? !this.blocks.l : !this.blocks.r;
 			}
 		}
-		else {
-			this.frameX = 0;
-		}
 
-		if( !this.isOnWall ) {
-			this.velX = Math.round( dir.x * this.speed );
-		}
+		this._updateFrameState( dt, dir.x, isJumpingUp );
+		this._updateVelocity( dt, dir );
 
-		if( !this.isOnGround && !this.isOnWall ) {
-			this.velY = Math.min( Math.round( this.velY + dt * js13k.GRAVITY ), js13k.MAX_VELOCITY_Y );
-		}
-
-		if( js13k.Input.isPressedKey( 'Space', true ) ) {
+		if( js13k.Input.isPressed( js13k.Input.ACTION.JUMP, true ) && this.canJump() ) {
 			this.jump();
 		}
 
 		// Do not set the position just yet. We need the current and
 		// projected next position for collision detection. The collision
 		// detection will then set the correct position.
-		this.nextPos.x = this.x + dt * this.velX;
-		this.nextPos.y = this.y + dt * this.velY;
+		this.nextPos.x = this.x + Math.round( dt * this.velX );
+		this.nextPos.y = this.y + Math.round( dt * this.velY );
 	}
 
 

@@ -18,7 +18,7 @@ class Level_Intro extends js13k.Level {
 
 		const objects = [
 			{ x: 0, y: 600, w: 400, h: 300, t: 2 }, // start, check point 1
-			{ x: 680, y: 480, w: 320, h: 120 },
+			{ x: 640, y: 480, w: 320, h: 120 },
 			{ x: 1200, y: 420, w: 320, h: 100 },
 			{ x: 1720, y: 620, w: 190, h: 60 },
 			{ x: 1790, y: 80, w: 110, h: 280 }, // wall jump to pillar
@@ -30,7 +30,7 @@ class Level_Intro extends js13k.Level {
 			{ x: 3300, y: 60, w: 100, h: 520 }, // big blocking wall
 			{ x: 3460, y: 580, w: 160, h: 100 },
 			{ x: 3700, y: 500, w: 160, h: 100 },
-			{ x: 3900, y: 400, w: 300, h: 300, t: 2 } // goal
+			{ x: 3900, y: 400, w: 300, h: 400, t: 2 } // goal
 		];
 
 		objects.forEach( o => {

@@ -17,7 +17,6 @@ cp 'dev/index-dev.html' 'build/'
 cp 'dev/'*.gif 'build/'
 cp 'dev/js/'*.js 'build/'
 cp 'dev/js/levels/'*.js 'build/levels/'
-cp 'dev/js/ui/'*.js 'build/ui/'
 
 cd 'build' > '/dev/null'
 
@@ -33,13 +32,13 @@ $TERSER \
 	'js13k.js' \
 	'Input.js' \
 	'Level.js' \
+	'LevelEffect.js' \
 	'LevelObject.js' \
 	'Character.js' \
 	'levels/Intro.js' \
 	'levels/Outro.js' \
 	'Renderer.js' \
 	'UI.js' \
-	'ui/Text.js' \
 	--ecma 8 --warn \
 	--compress --toplevel \
 	--mangle \

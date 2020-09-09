@@ -14,10 +14,8 @@ class Level {
 		// Objects have physic and/or can be interacted with.
 		this.objects = [];
 
-		// Items have to be drawn behind objects and have physics.
-		this.items = [];
-
 		// Purely optical, no interaction.
+		this.effects = [];
 		this.scenery = [];
 
 		this.limits = [0, Infinity];
@@ -190,6 +188,7 @@ class Level {
 			const gap = bottom.y - setTo.y - subject.h;
 
 			if(
+				bottom.gone ||
 				Math.abs( gap ) >= 1 ||
 				( bottom.x > setTo.x + subject.w ) ||
 				( setTo.x > bottom.x + bottom.w )
@@ -203,6 +202,7 @@ class Level {
 			const gap = top.y + top.h - setTo.y;
 
 			if(
+				top.gone ||
 				Math.abs( gap ) >= 1 ||
 				( top.x > setTo.x + subject.w ) ||
 				( setTo.x > top.x + top.w )
@@ -216,6 +216,7 @@ class Level {
 			const gap = left.x + left.w - setTo.x;
 
 			if(
+				left.gone ||
 				Math.abs( gap ) >= 1 ||
 				( left.y > setTo.y + subject.h ) ||
 				( setTo.y > left.y + left.h )
@@ -229,6 +230,7 @@ class Level {
 			const gap = right.x - setTo.x - subject.w;
 
 			if(
+				right.gone ||
 				Math.abs( gap ) >= 1 ||
 				( right.y > setTo.y + subject.h ) ||
 				( setTo.y > right.y + right.h )
@@ -261,8 +263,11 @@ class Level {
 		const offsetTop = height - tile;
 		const bgWidth = tile * 2;
 
-		let repeat = Math.ceil( width / bgWidth );
-		const bgOffsetFactor = Math.floor( -( offsetX + offsetX ) / bgWidth );
+		// Workaround: One more than needed, but it fixes
+		// a bug where not enough background is drawn.
+		let repeat = Math.ceil( width / bgWidth ) + 1;
+		// This probably not quite right:
+		const bgOffsetFactor = Math.floor( -offsetX / bgWidth );
 
 		while( repeat-- >= 0 ) {
 			ctx.drawImage(
@@ -276,13 +281,15 @@ class Level {
 
 		this.scenery.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
 		this.objects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
-		this.items.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
+		this.effects.forEach( o => o.draw( ctx ) );
 
 		if( this.player ) {
 			this.player.draw( ctx );
 		}
 
 		this.drawGoal( ctx, -offsetX, width );
+
+		ctx.setTransform( 1, 0, 0, 1, 0, 0 );
 	}
 
 
@@ -353,9 +360,12 @@ class Level {
 
 		// Reset platforms.
 		this.objects.forEach( o => {
+			o.crumbleProgress = 0;
 			o.gone = false;
 			o.isCrumbling = 0;
 		} );
+
+		this.effects = [];
 	}
 
 
@@ -373,6 +383,17 @@ class Level {
 
 
 	/**
+	 * Spawn a level effect.
+	 * @param {number} type
+	 * @param {*}      data
+	 */
+	spawnEffect( type, data ) {
+		const effect = new js13k.LevelEffect( this, type, data );
+		this.effects.push( effect );
+	}
+
+
+	/**
 	 *
 	 * @param {number} dt
 	 */
@@ -385,11 +406,17 @@ class Level {
 
 		this.objects.forEach( o => o.update( dt ) );
 		this.scenery.forEach( o => o.update( dt ) );
+		this.effects.forEach( o => o.update( dt ) );
 
 		const dir = js13k.Input.getDirections();
-		this.collisionDetection( this.player, this.player.nextPos );
-
 		this.player.update( dt, dir );
+
+		if( this.player.nextPos.x <= this.limits[0] ) {
+			this.player.nextPos.x = this.limits[0];
+			this.player.isWalking = false;
+		}
+
+		this.collisionDetection( this.player, this.player.nextPos );
 
 		// Player fell, reset to last checkpoint.
 		if( this.player.y > 1000 ) {

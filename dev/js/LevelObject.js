@@ -59,6 +59,7 @@ class LevelObject {
 			y: this.y
 		};
 
+		// this.crumbleProgress = 0;
 		// this.gone = false;
 		// this.isCrumbling = 0;
 	}
@@ -74,6 +75,7 @@ class LevelObject {
 
 		if( !this.isCrumbling ) {
 			this.isCrumbling = this.level.timer;
+			this.level.spawnEffect( 1, this );
 		}
 	}
 
@@ -87,12 +89,22 @@ class LevelObject {
 			return;
 		}
 
+		const prog = this.crumbleProgress || 0;
+
+		let x = this.x;
+		let y = this.y;
+
+		if( prog > 0.5 ) {
+			x += Math.round( Math.random() * 4 - 2 );
+			y += Math.round( Math.random() * 4 - 2 );
+		}
+
 		ctx.fillStyle = this.color;
-		ctx.fillRect( this.x, this.y, this.w, this.h );
+		ctx.fillRect( x, y, this.w, this.h );
 
 		if( this.top ) {
 			ctx.fillStyle = this.top;
-			ctx.fillRect( this.x, this.y, this.w, 6 );
+			ctx.fillRect( x, y, this.w, 8 );
 		}
 	}
 
@@ -104,14 +116,11 @@ class LevelObject {
 	update( dt ) {
 		if( this.isCrumbling && !this.gone ) {
 			const diff = this.level.timer - this.isCrumbling;
-			const percent = diff / ( 6 * js13k.TARGET_FPS );
+			this.crumbleProgress = diff / ( 4 * js13k.TARGET_FPS );
 
-			if( percent >= 1 ) {
+			if( this.crumbleProgress >= 1 ) {
+				this.crumbleProgress = 1;
 				this.gone = true;
-			}
-			else {
-				// TODO: reduce height
-				// TODO: have crumbling animation -> small blocks falling off
 			}
 		}
 	}
