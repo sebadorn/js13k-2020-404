@@ -22,20 +22,16 @@ class LevelObject {
 		// 0: crumbling platform
 		// 1: crumbling platform, but you cannot stand on the top area
 		// 2: pillar
-		// 3: scenery
 		this.type = data.t || 0;
 
 		if( this.type === 0 ) {
-			this.top = '#8f9552';
+			this.top = '#87a040';
 		}
 		else if( this.type === 2 ) {
-			this.color = '#909090';
-		}
-		else if( this.type === 3 ) {
-			this.color = '#a7b9c8';
+			this.color = '#f0f0f0';
 		}
 
-		this.color = data.color || this.color || '#696a6a';
+		this.color = data.color || this.color || '#404047';
 
 		this.x = data.x || 0;
 		this.y = data.y || 0;
@@ -43,9 +39,6 @@ class LevelObject {
 		this.h = data.h || 0;
 		this.xe = this.x + this.w; // x end
 		this.ye = this.y + this.h; // y end
-
-		this.dirX = 0;
-		this.dirY = 0;
 
 		// Velocity
 		this.velX = 0;
@@ -101,6 +94,17 @@ class LevelObject {
 
 		ctx.fillStyle = this.color;
 		ctx.fillRect( x, y, this.w, this.h );
+
+		if( this.type === 2 ) {
+			y += 12;
+			ctx.fillStyle = '#e0e0e0';
+			ctx.fillRect( x + 8, y, 6, this.h );
+			ctx.fillRect( x + 22, y, 6, this.h );
+			ctx.fillRect( x + 36, y, 6, this.h );
+			ctx.fillRect( x + this.w - 14, y, 6, this.h );
+			ctx.fillRect( x + this.w - 28, y, 6, this.h );
+			ctx.fillRect( x + this.w - 42, y, 6, this.h );
+		}
 
 		if( this.top ) {
 			ctx.fillStyle = this.top;

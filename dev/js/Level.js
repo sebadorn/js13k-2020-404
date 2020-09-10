@@ -48,11 +48,7 @@ class Level {
 			h: this.goal[3]
 		};
 
-		if(
-			this.player.x > goal.x &&
-			this.player.x + this.player.w < goal.x + goal.w &&
-			js13k.overlap( this.player, goal )
-		) {
+		if( js13k.overlap( this.player, goal ) ) {
 			this.state = 1;
 			this.onGoal();
 		}
@@ -281,7 +277,7 @@ class Level {
 
 		this.scenery.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
 		this.objects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
-		this.effects.forEach( o => o.draw( ctx ) );
+		this.effects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
 
 		if( this.player ) {
 			this.player.draw( ctx );
@@ -419,7 +415,7 @@ class Level {
 		this.collisionDetection( this.player, this.player.nextPos );
 
 		// Player fell, reset to last checkpoint.
-		if( this.player.y > 1000 ) {
+		if( this.player.y > js13k.MAX_CANVAS_HEIGHT + 100 ) {
 			this.resetToCheckPoint();
 			return;
 		}

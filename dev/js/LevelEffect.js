@@ -159,17 +159,29 @@ class LevelEffect {
 			this.draw = this._drawCrumbling;
 			this.startTime = 4 * js13k.TARGET_FPS;
 			this.endTime = 6 * js13k.TARGET_FPS;
+
+			this.x = this.data.x - 10;
+			this.xe = this.data.xe + 10;
 		}
 		else if( type === 2 ) {
 			this.draw = this._drawJumpDust;
 			this.endTime = 1 * js13k.TARGET_FPS;
+
+			this.x = this.data.x - 40;
+			this.xe = this.x + 100;
 		}
 		else if( type === 3 ) {
 			this.draw = this._drawHangDust;
 			this.endTime = 4 * js13k.TARGET_FPS;
+
+			this.x = this.data.x - 40;
+			this.xe = this.x + 100;
 		}
 		else if( type === 4 ) {
 			this.draw = this._drawGoal;
+
+			this.x = this.data.x;
+			this.xe = this.x + this.data.w;
 		}
 	}
 

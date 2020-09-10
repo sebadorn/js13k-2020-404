@@ -13,8 +13,11 @@ class Level_Intro extends js13k.Level {
 	constructor() {
 		super();
 
+		this.hasStarted = false;
+
 		this.player = new js13k.Character( this, 370, 0, 3 );
 		this.player.y = 601 - this.player.h;
+		this.player.isOnGround = true;
 
 		const objects = [
 			{ x: 0, y: 600, w: 400, h: 300, t: 2 }, // start, check point 1
@@ -38,18 +41,45 @@ class Level_Intro extends js13k.Level {
 			this.objects.push( lo );
 		} );
 
-		const scenery = [
-			{ x: 230, y: 200, w: 300, h: 600, t: 3 },
-			{ x: 900, y: 370, w: 420, h: 600, t: 3 }
-		];
-
-		scenery.forEach( s => {
-			const so = new js13k.LevelObject( this, s );
-			this.scenery.push( so );
-		} );
-
-		this.goal = [4000, 370, 200, 30];
+		this.goal = [4180, 0, 20, 400];
 		this.limits = [0, 4200 - js13k.Renderer.cnv.width]; // Level limits on the x axis.
+	}
+
+
+	/**
+	 *
+	 * @param {CanvasRenderingContext2d} ctx
+	 */
+	draw( ctx ) {
+		super.draw( ctx );
+
+		if( !this.hasStarted ) {
+			const centerX = js13k.Renderer.centerX;
+			const centerY = js13k.Renderer.centerY;
+
+			ctx.fillStyle = '#fff';
+			ctx.font = 'bold 92px Arial, sans-serif';
+			ctx.textAlign = 'center';
+			ctx.textBaseline = 'alphabetic';
+
+			js13k.Renderer.setShadowText( 8 );
+
+			ctx.strokeStyle = '#fff';
+			ctx.lineWidth = 4;
+			ctx.beginPath();
+			ctx.moveTo( centerX - 540, centerY + 12 );
+			ctx.lineTo( centerX + 540, centerY + 12 );
+			ctx.stroke();
+
+			ctx.fillText( 'AND THEN IT WAS GONE', centerX, centerY );
+			js13k.Renderer.resetShadow();
+
+			// Blinking effect.
+			if( ~~this.timer % 200 > 30 ) {
+				ctx.font = '36px Arial, sans-serif';
+				ctx.fillText( 'Press [Space] to start.', centerX, centerY + 64 );
+			}
+		}
 	}
 
 
@@ -58,6 +88,24 @@ class Level_Intro extends js13k.Level {
 	 */
 	onGoal() {
 		js13k.Renderer.changeLevel( new js13k.Level.Outro() );
+	}
+
+
+	/**
+	 *
+	 * @param {number} dt
+	 */
+	update( dt ) {
+		if( this.hasStarted ) {
+			super.update( dt );
+		}
+		else {
+			this.timer += dt;
+
+			if( js13k.Input.isPressed( js13k.Input.ACTION.JUMP, true ) ) {
+				this.hasStarted = true;
+			}
+		}
 	}
 
 

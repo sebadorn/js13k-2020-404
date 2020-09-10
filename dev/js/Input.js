@@ -46,25 +46,25 @@ js13k.Input = {
 				keyboard: ['Escape'],
 				gamepad: [9]
 			},
-			[this.ACTION.LEFT]: {
-				keyboard: ['ArrowLeft'],
-				gamepad: [14]
-			},
 			[this.ACTION.UP]: {
-				keyboard: ['ArrowUp'],
+				keyboard: ['ArrowUp', 'KeyW', 'KeyZ'], // Z: French layout
 				gamepad: [12]
 			},
-			[this.ACTION.RIGHT]: {
-				keyboard: ['ArrowRight'],
-				gamepad: [15]
+			[this.ACTION.LEFT]: {
+				keyboard: ['ArrowLeft', 'KeyA', 'KeyQ'], // Q: French layout
+				gamepad: [14]
 			},
 			[this.ACTION.DOWN]: {
-				keyboard: ['ArrowDown'],
+				keyboard: ['ArrowDown', 'KeyS'],
 				gamepad: [13]
 			},
+			[this.ACTION.RIGHT]: {
+				keyboard: ['ArrowRight', 'KeyD'],
+				gamepad: [15]
+			},
 			[this.ACTION.JUMP]: {
-				keyboard: ['Space', 'ArrowUp'],
-				gamepad: [0, 12]
+				keyboard: ['Space'],
+				gamepad: [0]
 			}
 		};
 	},

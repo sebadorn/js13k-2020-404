@@ -16,19 +16,20 @@ class Character extends js13k.LevelObject {
 	 */
 	constructor( level, x, y, size ) {
 		super( level, { x, y, w: 6 * size, h: 8 * size } );
+		this.size = size;
 
 		this.dirX = 1;
-		this.size = size;
-		this.speed = 10;
+		this.dirY = 0;
 
 		this.eyeBlink = 0;
 		this.frameX = 0;
+		this.lastOnGround = 0;
 
 		// These attributes exist, but are set in or after the collision
 		// detection. Commenting it out here to save some bytes.
 		//
 		// this.isOnGround = false;
-		// this.isOnWall = false;
+		// this.isOnWall = 0;
 		// this.isWalking = false;
 	}
 
@@ -36,16 +37,57 @@ class Character extends js13k.LevelObject {
 	/**
 	 *
 	 * @private
-	 * @param {number}  dt
-	 * @param {number}  dirX
-	 * @param {boolean} isJumpingUp
+	 * @param {object} dir
+	 * @param {number} dir.x
+	 * @param {number} dir.y
 	 */
-	_updateFrameState( dt, dirX, isJumpingUp ) {
-		if( !isJumpingUp && dirX ) {
+	_updateDirection( dir ) {
+		if( dir.x ) {
+			this.dirX = dir.x < 0 ? -1 : 1;
+		}
+
+		this.dirY = dir.y > 0 ? 1 : 0;
+	}
+
+
+	/**
+	 *
+	 * @private
+	 * @param {number} dt
+	 * @param {number} dirX
+	 */
+	_updateFrameState( dt, dirX ) {
+		if( dirX && !this.isJumpingUp() ) {
 			this.frameX += dt * 0.2;
 		}
 		else {
 			this.frameX = 0;
+		}
+	}
+
+
+	/**
+	 *
+	 * @private
+	 * @param {object} dir
+	 * @param {number} dir.x
+	 */
+	_updateStates( dir ) {
+		if( this.isOnGround ) {
+			this.lastOnGround = this.level.timer;
+		}
+
+		this.isOnGround = !!this.blocks.b;
+
+		this.isWalking = this.isOnGround && dir.x;
+
+		if( !this.isOnGround && ( this.blocks.l || this.blocks.r ) ) {
+			if( !this.isOnWall ) {
+				this.isOnWall = this.level.timer;
+			}
+		}
+		else {
+			this.isOnWall = 0;
 		}
 	}
 
@@ -58,12 +100,40 @@ class Character extends js13k.LevelObject {
 	 * @param {number} dir.x
 	 */
 	_updateVelocity( dt, dir ) {
-		if( !this.isOnWall && this.isOnGround ) {
-			this.velX = dir.x * this.speed;
+		if( this.isOnWall ) {
+			this.velX = 0;
+
+			// Slide down wall.
+			if( this.level.timer - this.isOnWall > js13k.TARGET_FPS ) {
+				this.velY = Math.min( this.velY + dt * js13k.GRAVITY / 8, js13k.MAX_VELOCITY_Y / 4 );
+			}
+			// Slowly crawl up wall.
+			else if( dir.y < 0 ) {
+				this.velY = -1.25;
+			}
+			else {
+				this.velY = 0;
+			}
+
+			return;
 		}
 
-		if( !this.isOnGround && !this.isOnWall ) {
+		if( !this.isOnGround ) {
 			this.velY = Math.min( this.velY + dt * js13k.GRAVITY, js13k.MAX_VELOCITY_Y );
+		}
+
+		if( this.isWalking || this.isFallingDown() || this.isJumpingUp() ) {
+			// Moving right.
+			if( dir.x > 0 ) {
+				this.velX = Math.min( this.velX + dt * 2, js13k.MAX_VELOCITY_X );
+			}
+			// Moving left.
+			else if( dir.x < 0 ) {
+				this.velX = Math.max( this.velX - dt * 2, -js13k.MAX_VELOCITY_X );
+			}
+		}
+		else {
+			this.velX = 0;
 		}
 	}
 
@@ -73,7 +143,12 @@ class Character extends js13k.LevelObject {
 	 * @return {boolean}
 	 */
 	canJump() {
-		return this.isOnGround || this.isOnWall;
+		return (
+			this.isOnGround ||
+			this.isOnWall ||
+			// Coyote time
+			this.level.timer - this.lastOnGround < 2
+		);
 	}
 
 
@@ -190,6 +265,15 @@ class Character extends js13k.LevelObject {
 	 *
 	 * @return {boolean}
 	 */
+	isFallingDown() {
+		return !this.isOnGround && !this.isOnWall && this.velY > 0;
+	}
+
+
+	/**
+	 *
+	 * @return {boolean}
+	 */
 	isJumpingUp() {
 		return !this.isOnGround && !this.isOnWall && this.velY < 0;
 	}
@@ -202,12 +286,18 @@ class Character extends js13k.LevelObject {
 		if( this.isOnWall ) {
 			if( this.blocks.l ) {
 				this.velX -= js13k.JUMP_VELOCITY / 2;
-				this.dirX = -1;
+				this.dirX = 1;
 			}
 			else if( this.blocks.r ) {
 				this.velX += js13k.JUMP_VELOCITY / 2;
-				this.dirX = 1;
+				this.dirX = -1;
 			}
+
+			this.level.spawnEffect( 2, {
+				x: this.x + ( this.dirX < 0 ? this.w : 0 ),
+				y: this.y,
+				dir: this.dirX
+			} );
 		}
 		else {
 			this.level.spawnEffect( 2, {
@@ -220,6 +310,7 @@ class Character extends js13k.LevelObject {
 		this.velY = js13k.JUMP_VELOCITY;
 		this.isOnGround = false;
 		this.isOnWall = 0;
+		this.lastOnGround = 0;
 	}
 
 
@@ -231,45 +322,12 @@ class Character extends js13k.LevelObject {
 	 * @param {number} dir.y
 	 */
 	update( dt, dir ) {
-		super.update( dt );
-
-		this.dirY = 0;
-
-		if( typeof dir.y === 'number' && dir.y !== 0 ) {
-			this.dirY = dir.y < 0 ? -1 : 1;
-		}
-
-		this.isOnGround = !!this.blocks.b;
-		this.isWalking = false;
-
-		if(
-			!this.isOnGround &&
-			( this.blocks.l || this.blocks.r )
-		) {
-			if( !this.isOnWall ) {
-				this.isOnWall = this.level.timer;
-				this.velX = 0;
-				this.velY = 0;
-			}
-		}
-		else {
-			this.isOnWall = 0;
-		}
-
-		const isJumpingUp = this.isJumpingUp();
-
-		if( !isJumpingUp && dir.x !== 0 ) {
-			this.dirX = dir.x < 0 ? -1 : 1;
-
-			if( this.isOnGround ) {
-				this.isWalking = dir.x < 0 ? !this.blocks.l : !this.blocks.r;
-			}
-		}
-
-		this._updateFrameState( dt, dir.x, isJumpingUp );
+		this._updateStates( dir );
+		this._updateDirection( dir );
 		this._updateVelocity( dt, dir );
+		this._updateFrameState( dt, dir.x );
 
-		if( js13k.Input.isPressed( js13k.Input.ACTION.JUMP, true ) && this.canJump() ) {
+		if( this.canJump() && js13k.Input.isPressed( js13k.Input.ACTION.JUMP, true ) ) {
 			this.jump();
 		}
 

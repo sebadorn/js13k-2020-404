@@ -27,7 +27,7 @@ js13k.Renderer = {
 	 * Clear the canvas.
 	 */
 	clear() {
-		this.ctx.fillStyle = '#cbdbfc';
+		this.ctx.fillStyle = '#3e4968';
 		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 	},
 
@@ -48,10 +48,16 @@ js13k.Renderer = {
 		this.ctx.fillStyle = '#111';
 		this.ctx.fillRect( 0, 0, this.cnv.width, this.cnv.height );
 
-		this.ctx.fillStyle = 'rgba(162, 162, 162)';
-		this.ctx.font = 'bold 128px sans-serif';
+		this.setShadowText();
+		this.ctx.fillStyle = '#a2a2a2';
+		this.ctx.font = 'bold 128px Arial, sans-serif';
 		this.ctx.textAlign = 'center';
 		this.ctx.fillText( 'PAUSED', this.centerX, this.centerY );
+		this.resetShadow();
+
+		this.ctx.fillStyle = '#808080';
+		this.ctx.font = '48px Arial, sans-serif';
+		this.ctx.fillText( 'Press [Esc] to continue.', this.centerX, this.centerY + 80 );
 	},
 
 
@@ -78,7 +84,7 @@ js13k.Renderer = {
 			this.sprite = img;
 			cb();
 		};
-		img.src = 's.gif';
+		img.src = 'm.gif';
 	},
 
 
@@ -158,6 +164,14 @@ js13k.Renderer = {
 
 
 	/**
+	 *
+	 */
+	resetShadow() {
+		this.ctx.shadowColor = '#00000000';
+	},
+
+
+	/**
 	 * Resize the canvas.
 	 * @param {?Event} ev
 	 */
@@ -176,6 +190,18 @@ js13k.Renderer = {
 			clearTimeout( this._timeoutDrawPause );
 			this._timeoutDrawPause = setTimeout( () => this.drawPause(), 100 );
 		}
+	},
+
+
+	/**
+	 *
+	 * @param {?number} [offset = 10]
+	 * @param {?string} [color = "#df7126"]
+	 */
+	setShadowText( offset = 10, color = '#df7126' ) {
+		this.ctx.shadowOffsetX = offset;
+		this.ctx.shadowBlur = 0;
+		this.ctx.shadowColor = color;
 	},
 
 
