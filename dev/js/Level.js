@@ -267,7 +267,7 @@ class Level {
 
 		while( repeat-- >= 0 ) {
 			ctx.drawImage(
-				js13k.Renderer.sprite,
+				js13k.Renderer.sprite_m,
 				// Part of the original image to use.
 				0, 0, 32, 16,
 				// Where and how big to paint it on the canvas.
@@ -345,7 +345,7 @@ class Level {
 		const block = this.checkPoint;
 		const player = this.player;
 
-		player.x = block.x + block.w - player.w - 16;
+		player.x = block.x + Math.round( block.w - player.w ) / 2;
 		player.y = block.y - player.h - 1;
 
 		player.nextPos.x = player.x;
@@ -415,7 +415,10 @@ class Level {
 		this.collisionDetection( this.player, this.player.nextPos );
 
 		// Player fell, reset to last checkpoint.
-		if( this.player.y > js13k.MAX_CANVAS_HEIGHT + 100 ) {
+		if(
+			this.player.y > js13k.MAX_CANVAS_HEIGHT + 100 ||
+			this.player.isOnSpikes()
+		) {
 			this.resetToCheckPoint();
 			return;
 		}

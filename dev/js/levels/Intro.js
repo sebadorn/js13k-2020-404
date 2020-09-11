@@ -14,26 +14,69 @@ class Level_Intro extends js13k.Level {
 		super();
 
 		this.hasStarted = false;
-
-		this.player = new js13k.Character( this, 370, 0, 3 );
-		this.player.y = 601 - this.player.h;
+		// 256 - 32, 600
+		this.player = new js13k.Character( this, 5980, 0, 3 );
+		this.player.y = 300 - this.player.h;
 		this.player.isOnGround = true;
 
+		// Because of the stone tile, width and height have to be multiples of 64.
 		const objects = [
-			{ x: 0, y: 600, w: 400, h: 300, t: 2 }, // start, check point 1
-			{ x: 640, y: 480, w: 320, h: 120 },
-			{ x: 1200, y: 420, w: 320, h: 100 },
-			{ x: 1720, y: 620, w: 190, h: 60 },
-			{ x: 1790, y: 80, w: 110, h: 280 }, // wall jump to pillar
-			{ x: 2110, y: 200, w: 300, h: 1000, t: 2 }, // check point 2
-			{ x: 2510, y: 380, w: 90, h: 200 },
-			{ x: 2780, y: 160, w: 110, h: 260 },
-			{ x: 2830, y: 600, w: 300, h: 110 },
-			{ x: 3160, y: 610, w: 100, h: 110 },
-			{ x: 3300, y: 60, w: 100, h: 520 }, // big blocking wall
-			{ x: 3460, y: 580, w: 160, h: 100 },
-			{ x: 3700, y: 500, w: 160, h: 100 },
-			{ x: 3900, y: 400, w: 300, h: 400, t: 2 } // goal
+			// Start pillar
+			{ x: -128, y: 600, w: 384, h: 300, t: 2 },
+			// Bridge
+			{ x:  256, y: 600, w: 128, h: 64 },
+			{ x:  380, y: 600, w: 128, h: 64 },
+			{ x:  504, y: 600, w: 128, h: 64 },
+			{ x:  628, y: 600, w: 128, h: 64 },
+			{ x:  752, y: 600, w: 128, h: 64 },
+			{ x:  876, y: 600, w: 128, h: 64 },
+			{ x: 1000, y: 600, w: 128, h: 64 },
+			// Gaps
+			{ x: 1320, y: 600, w: 128, h: 64 },
+			{ x: 1640, y: 600, w: 128, h: 64 },
+			{ x: 1960, y: 600, w: 128, h: 64 },
+			{ x: 2280, y: 600, w: 128, h: 64 },
+
+			// Check point
+			{ x: 2600, y: 536, w: 128, h: 300, t: 2 },
+			// Climb
+			{ x: 2920, y: 600, w: 384, h:  64 },
+			{ x: 3300, y: 408, w:  64, h: 256 },
+			{ x: 3300, y: 216, w:  64, h: 192 },
+			{ x: 3040, y:  32, w:  64, h: 192, spikes: 'l' },
+			{ x: 3040, y: 272, w:  64, h: 128, spikes: 'l' },
+			{ x: 3300, y: 152, w: 256, h:  64 },
+			{ x: 3684, y: 152, w:  64, h:  64 },
+
+			// Check point
+			{ x: 3748, y: 152, w: 192, h: 1000, t: 2 },
+			// Walls and platforms
+			{ x: 4004, y:  500, w: 128, h:  64  },
+			{ x: 4200, y:  200, w:  64, h: 320, spikes: 't' },
+			{ x: 4200, y: -500, w:  64, h: 704, spikes: 't' },
+			{ x: 4200, y:  528, w:  64, h: 320  },
+			{ x: 4392, y:  500, w: 128, h:  64  },
+			{ x: 4584, y:  400, w: 128, h:  64  },
+			{ x: 4648, y:  100, w: 128, h: 128  },
+			{ x: 4844, y:  500, w:  64, h:  64  },
+			{ x: 4904, y: -500, w:  64, h: 1408, spikes: 't' },
+			// Platforms behind wall
+			{ x: 5192, y: 564, w:  64, h: 64 },
+			{ x: 5320, y: 500, w: 256, h: 64 },
+			{ x: 5640, y: 436, w: 256, h: 64 },
+
+			// Check point
+			{ x: 5960, y: 372, w: 192, h: 600, t: 2 },
+			// Bridge
+			{ x: 6216, y: 436, w: 256, h:  64 },
+			{ x: 6468, y: 436, w: 256, h:  64 },
+			{ x: 6720, y: 436, w: 256, h:  64 },
+			{ x: 6720, y: -64, w: 128, h: 320, spikes: 'l' },
+			{ x: 6972, y: 436, w: 256, h:  64 },
+
+			// Check point / Goal
+			{ x: 7676, y: 320, w: 192, h: 600, t: 2 },
+			{ x: 7612, y: js13k.MAX_CANVAS_HEIGHT - 64, w:  64, h:  64 }
 		];
 
 		objects.forEach( o => {
@@ -41,8 +84,8 @@ class Level_Intro extends js13k.Level {
 			this.objects.push( lo );
 		} );
 
-		this.goal = [4180, 0, 20, 400];
-		this.limits = [0, 4200 - js13k.Renderer.cnv.width]; // Level limits on the x axis.
+		this.goal = [7848, 0, 20, 320];
+		this.limits = [0, 7868 - js13k.Renderer.cnv.width]; // Level limits on the x axis.
 	}
 
 
@@ -63,21 +106,25 @@ class Level_Intro extends js13k.Level {
 			ctx.textBaseline = 'alphabetic';
 
 			js13k.Renderer.setShadowText( 8 );
-
-			ctx.strokeStyle = '#fff';
-			ctx.lineWidth = 4;
-			ctx.beginPath();
-			ctx.moveTo( centerX - 540, centerY + 12 );
-			ctx.lineTo( centerX + 540, centerY + 12 );
-			ctx.stroke();
-
 			ctx.fillText( 'AND THEN IT WAS GONE', centerX, centerY );
 			js13k.Renderer.resetShadow();
 
 			// Blinking effect.
 			if( ~~this.timer % 200 > 30 ) {
 				ctx.font = '36px Arial, sans-serif';
-				ctx.fillText( 'Press [Space] to start.', centerX, centerY + 64 );
+				ctx.fillText( 'Press [Space] to start', centerX, centerY + 58 );
+			}
+
+			// Hint to use gamepad.
+			ctx.textBaseline = 'top';
+
+			if( js13k.Input.numGamepads > 0 ) {
+				ctx.font = 'bold 20px Arial, sans-serif';
+				ctx.fillText( 'Gamepad connected!', centerX, 24 );
+			}
+			else {
+				ctx.font = 'italic 20px Arial, sans-serif';
+				ctx.fillText( 'No gamepad connected', centerX, 24 );
 			}
 		}
 	}

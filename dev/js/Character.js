@@ -15,7 +15,7 @@ class Character extends js13k.LevelObject {
 	 * @param {number}      size
 	 */
 	constructor( level, x, y, size ) {
-		super( level, { x, y, w: 6 * size, h: 8 * size } );
+		super( level, { x, y, w: 6 * size, h: 8 * size, t: -1 } );
 		this.size = size;
 
 		this.dirX = 1;
@@ -276,6 +276,31 @@ class Character extends js13k.LevelObject {
 	 */
 	isJumpingUp() {
 		return !this.isOnGround && !this.isOnWall && this.velY < 0;
+	}
+
+
+	/**
+	 * Check if the player touches spikes.
+	 * @return {boolean}
+	 */
+	isOnSpikes() {
+		if( !this.isOnGround && !this.isOnWall ) {
+			return false;
+		}
+
+		if( this.blocks.b && this.blocks.b.spikes.t ) {
+			return true;
+		}
+
+		if( this.blocks.r && this.blocks.r.spikes.l ) {
+			return true;
+		}
+
+		if( this.blocks.l && this.blocks.l.spikes.r ) {
+			return true;
+		}
+
+		return false;
 	}
 
 

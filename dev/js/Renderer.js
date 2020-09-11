@@ -11,7 +11,8 @@ js13k.Renderer = {
 	ctx: null,
 	last: 0,
 	level: null,
-	sprite: null,
+	sprite_m: null,
+	sprite_s: null,
 
 
 	/**
@@ -68,6 +69,7 @@ js13k.Renderer = {
 	init( cb ) {
 		this.cnv = document.getElementById( 'c' );
 		this.ctx = this.cnv.getContext( '2d', { alpha: false } );
+		this.ctx.imageSmoothingEnabled = false;
 
 		this.registerEvents();
 		this.loadSprite( cb );
@@ -79,12 +81,21 @@ js13k.Renderer = {
 	 * @param {function} cb
 	 */
 	loadSprite( cb ) {
-		const img = new Image();
-		img.onload = () => {
-			this.sprite = img;
-			cb();
+		let loaded = 0;
+
+		const img_m = new Image();
+		img_m.onload = () => {
+			this.sprite_m = img_m;
+			( ++loaded === 2 ) && cb();
 		};
-		img.src = 'm.gif';
+		img_m.src = 'm.gif';
+
+		const img_s = new Image();
+		img_s.onload = () => {
+			this.sprite_s = img_s;
+			( ++loaded === 2 ) && cb();
+		};
+		img_s.src = 's.gif';
 	},
 
 
@@ -215,6 +226,26 @@ js13k.Renderer = {
 		else {
 			this.pause();
 		}
+	},
+
+
+	/**
+	 * Render an object to an offset canvas.
+	 * @param  {js13k.LevelObject} o
+	 * @param  {?number}           h
+	 * @param  {?number}           w
+	 * @return {HTMLCanvasElement}
+	 */
+	toOffscreenCanvas( o, h, w ) {
+		const canvas = document.createElement( 'canvas' );
+		canvas.width = w || o.w;
+		canvas.height = h || o.h;
+
+		const ctx = canvas.getContext( '2d' );
+		ctx.imageSmoothingEnabled = false;
+		o.draw( ctx );
+
+		return canvas;
 	},
 
 

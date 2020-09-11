@@ -44,8 +44,8 @@ class LevelEffect {
 
 		// Dust flying up.
 		ctx.globalAlpha = 1 - progSquare;
-		ctx.fillStyle = data.color;
-		const s = 6 * ( 1 - prog );
+		ctx.fillStyle = '#a2a2a2';
+		const s = 8 * ( 1 - prog );
 		const sin = Math.sin( prog * 4 * Math.PI ) * 10;
 
 		let x = data.x - s / 2;
@@ -76,16 +76,16 @@ class LevelEffect {
 
 		ctx.globalAlpha = 1 - progSquare;
 
-		ctx.fillStyle = data.color;
-		ctx.fillRect( data.x, leftY, wHalf, data.h );
-		ctx.fillRect( data.x + wHalf, rightY, wHalf, data.h );
-
-		if( data.top ) {
-			ctx.fillStyle = data.top;
-			ctx.fillRect( data.x, leftY, wHalf, 8 );
-			ctx.fillRect( data.x + wHalf, rightY, wHalf, 8 );
-		}
-
+		ctx.drawImage(
+			data.cnv,
+			0, 0, wHalf, data.h, // source
+			data.x, leftY, wHalf, data.h // destination
+		);
+		ctx.drawImage(
+			data.cnv,
+			wHalf, 0, wHalf, data.h, // source
+			data.x + wHalf, rightY, wHalf, data.h // destination
+		);
 
 		ctx.globalAlpha = alpha;
 	}
@@ -157,8 +157,8 @@ class LevelEffect {
 	_init( type ) {
 		if( type === 1 ) {
 			this.draw = this._drawCrumbling;
-			this.startTime = 4 * js13k.TARGET_FPS;
-			this.endTime = 6 * js13k.TARGET_FPS;
+			this.startTime = 1 * js13k.TARGET_FPS;
+			this.endTime = 2 * js13k.TARGET_FPS;
 
 			this.x = this.data.x - 10;
 			this.xe = this.data.xe + 10;
