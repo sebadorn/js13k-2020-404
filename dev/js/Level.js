@@ -18,8 +18,11 @@ class Level {
 		this.effects = [];
 		this.scenery = [];
 
-		this.limits = [0, Infinity];
+		this.limitsX = [0, Infinity];
 		this.timer = 0;
+
+		this.VIEWPORT_MAX_HEIGHT = js13k.MAX_CANVAS_HEIGHT;
+		this.VIEWPORT_MAX_WIDTH = js13k.MAX_CANVAS_WIDTH;
 
 		// this.checkPoint = null;
 		// this.goal = null;
@@ -249,41 +252,28 @@ class Level {
 		const height = js13k.Renderer.cnv.height;
 
 		// Center x axis on player.
-		const halfWidth = Math.round( width / 2 );
-		const offsetX = Math.min( this.limits[0], Math.max( -this.limits[1], halfWidth - this.player.x ) );
+		const offset = this.getViewportOffset( width, height );
+		const offsetX = offset[0];
+		const offsetY = offset[1];
 
-		ctx.setTransform( 1, 0, 0, 1, offsetX, 0 );
+		this.drawBackground( ctx, height, width, offsetX );
 
-		// Background image. Repeat as often as necessary to fill the screen.
-		const tile = 752;
-		const offsetTop = height - tile;
-		const bgWidth = tile * 2;
+		ctx.setTransform( 1, 0, 0, 1, offsetX, offsetY );
 
-		// Workaround: One more than needed, but it fixes
-		// a bug where not enough background is drawn.
-		let repeat = Math.ceil( width / bgWidth ) + 1;
-		// This probably not quite right:
-		const bgOffsetFactor = Math.floor( -offsetX / bgWidth );
-
-		while( repeat-- >= 0 ) {
-			ctx.drawImage(
-				js13k.Renderer.sprite_m,
-				// Part of the original image to use.
-				0, 0, 32, 16,
-				// Where and how big to paint it on the canvas.
-				( bgOffsetFactor + repeat ) * bgWidth, offsetTop, bgWidth, tile
-			);
-		}
-
-		this.scenery.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
-		this.objects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
-		this.effects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, o ) );
+		this.scenery.forEach( o => this.drawIfVisible( ctx, -offsetX, width, -offsetY, height, o ) );
+		this.objects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, -offsetY, height, o ) );
+		this.effects.forEach( o => this.drawIfVisible( ctx, -offsetX, width, -offsetY, height, o ) );
 
 		if( this.player ) {
-			this.player.draw( ctx );
+			if( !this.player.died ) {
+				this.player.draw( ctx );
+				this.drawGoal( ctx, -offsetX, width, -offsetY, height );
+			}
+			else {
+				ctx.setTransform( 1, 0, 0, 1, 0, 0 );
+				this.drawRespawnTransition( ctx );
+			}
 		}
-
-		this.drawGoal( ctx, -offsetX, width );
 
 		ctx.setTransform( 1, 0, 0, 1, 0, 0 );
 	}
@@ -292,10 +282,41 @@ class Level {
 	/**
 	 *
 	 * @param {CanvasRenderingContext2d} ctx
+	 * @param {number}                   cnvHeight
+	 * @param {number}                   cnvWidth
+	 * @param {number}                   offsetX
+	 */
+	drawBackground( ctx, cnvHeight, cnvWidth, offsetX ) {
+		const tileH = 752;
+		const tileW = tileH * 2;
+		let repeat = Math.ceil( cnvWidth / tileW );
+
+		const levelW = this.limitsX[1] - cnvWidth - this.limitsX[0];
+		const prog = ( offsetX - this.limitsX[0] ) / levelW;
+		const diffW = tileW * repeat - cnvWidth;
+		const x = Math.round( prog * diffW );
+
+		while( repeat-- ) {
+			ctx.drawImage(
+				js13k.Renderer.sprite_m,
+				// Part of the original image to use.
+				0, 0, 32, 16,
+				// Where and how big to paint it on the canvas.
+				x + repeat * tileW, cnvHeight - tileH, tileW, tileH
+			);
+		}
+	}
+
+
+	/**
+	 *
+	 * @param {CanvasRenderingContext2d} ctx
 	 * @param {number}                   areaX
 	 * @param {number}                   areaWidth
+	 * @param {number}                   areaY
+	 * @param {number}                   areaHeight
 	 */
-	drawGoal( ctx, areaX, areaWidth ) {
+	drawGoal( ctx, areaX, areaWidth, areaY, areaHeight ) {
 		if( !this.goal ) {
 			return;
 		}
@@ -310,8 +331,18 @@ class Level {
 			return;
 		}
 
-		ctx.fillStyle = '#8BBADCA0';
+		const alpha = ctx.globalAlpha;
+
+		ctx.globalAlpha = 0.4;
+		ctx.fillStyle = 'rgba(144,192,224)';
 		ctx.fillRect( goalX, this.goal[1], goalW, this.goal[3] );
+
+		for( let i = 1; i < 8; i++ ) {
+			ctx.globalAlpha -= 0.05;
+			ctx.fillRect( goalX - i * 16, this.goal[1], 16, this.goal[3] );
+		}
+
+		ctx.globalAlpha = alpha;
 	}
 
 
@@ -320,9 +351,11 @@ class Level {
 	 * @param {CanvasRenderingContext2d} ctx
 	 * @param {number}                   areaX
 	 * @param {number}                   areaWidth
+	 * @param {number}                   areaY
+	 * @param {number}                   areaHeight
 	 * @param {js13k.LevelObject}        o
 	 */
-	drawIfVisible( ctx, areaX, areaWidth, o ) {
+	drawIfVisible( ctx, areaX, areaWidth, areaY, areaHeight, o ) {
 		if(
 			o.x > areaX + areaWidth || // outside the viewport to the right
 			o.xe < areaX // outside the viewport to the left
@@ -331,6 +364,51 @@ class Level {
 		}
 
 		o.draw( ctx );
+	}
+
+
+	/**
+	 *
+	 * @param {CanvasRenderingContext2d} ctx
+	 */
+	drawRespawnTransition( ctx ) {
+		const cnvWidth = js13k.Renderer.cnv.width;
+		const cnvHeight = js13k.Renderer.cnv.height;
+		const barH = Math.ceil( cnvHeight / 2 );
+
+		const diff = this.timer - this.player.died;
+		const halfTime = 0.1 * js13k.TARGET_FPS;
+		const halfTimeWait = 0.2 * js13k.TARGET_FPS;
+
+		let prog = 1;
+
+		if( diff <= halfTime ) {
+			prog = Math.min( 1, diff / halfTime );
+		}
+		else if( diff > halfTimeWait ) {
+			prog = 1 - Math.min( 1, ( diff - halfTimeWait ) / halfTimeWait );
+		}
+
+		ctx.fillStyle = '#000';
+		ctx.fillRect( 0, 0, cnvWidth, barH * prog );
+		ctx.fillRect( 0, cnvHeight - barH * prog, cnvWidth, barH );
+	}
+
+
+	/**
+	 *
+	 * @param  {number} cnvWidth
+	 * @param  {number} cnvHeight
+	 * @return {number[]}
+	 */
+	getViewportOffset( cnvWidth, cnvHeight ) {
+		const halfWidth = Math.round( cnvWidth / 2 );
+		const offsetX = Math.min(
+			this.limitsX[0],
+			Math.max( -( this.limitsX[1] - cnvWidth ), halfWidth - this.player.x )
+		);
+
+		return [offsetX, 0];
 	}
 
 
@@ -404,38 +482,63 @@ class Level {
 		this.scenery.forEach( o => o.update( dt ) );
 		this.effects.forEach( o => o.update( dt ) );
 
-		const dir = js13k.Input.getDirections();
-		this.player.update( dt, dir );
+		if( !this.player.died ) {
+			if(
+				this.checkPoint &&
+				js13k.Input.isPressed( js13k.Input.ACTION.RESPAWN, true )
+			) {
+				this.player.died = this.timer;
+				return;
+			}
 
-		if( this.player.nextPos.x <= this.limits[0] ) {
-			this.player.nextPos.x = this.limits[0];
-			this.player.isWalking = false;
+			const dir = js13k.Input.getDirections();
+			this.player.update( dt, dir );
+
+			// Confine player to map limits on the x axis.
+			// Limit to the left.
+			if( this.player.nextPos.x <= this.limitsX[0] ) {
+				this.player.nextPos.x = this.limitsX[0];
+				this.player.isWalking = false;
+			}
+			// Limit to the right.
+			else if( this.player.nextPos.x + this.player.w >= this.limitsX[1] ) {
+				this.player.nextPos.x = this.limitsX[1] - this.player.w;
+				this.player.isWalking = false;
+			}
+
+			this.collisionDetection( this.player, this.player.nextPos );
+
+			// Player fell, reset to last checkpoint (after a short transition effect).
+			if(
+				this.player.y > js13k.Renderer.cnv.height + 100 ||
+				this.player.isOnSpikes()
+			) {
+				this.player.died = this.timer;
+				return;
+			}
+
+			const blocks = this.player.blocks;
+
+			if( this.player.isOnGround && blocks.b ) {
+				this.setCheckPoint( blocks.b );
+				blocks.b.crumble();
+			}
+
+			if( this.player.isOnWall ) {
+				blocks.l && blocks.l.crumble();
+				blocks.r && blocks.r.crumble();
+			}
+
+			this.checkGoal();
 		}
-
-		this.collisionDetection( this.player, this.player.nextPos );
-
-		// Player fell, reset to last checkpoint.
-		if(
-			this.player.y > js13k.MAX_CANVAS_HEIGHT + 100 ||
-			this.player.isOnSpikes()
-		) {
+		// Player died, transition effect over.
+		else if( this.timer - this.player.died >= 0.45 * js13k.TARGET_FPS ) {
+			this.player.died = 0;
+		}
+		// Player died, transition effect.
+		else if( this.timer - this.player.died >= 0.2 * js13k.TARGET_FPS ) {
 			this.resetToCheckPoint();
-			return;
 		}
-
-		const blocks = this.player.blocks;
-
-		if( this.player.isOnGround && blocks.b ) {
-			this.setCheckPoint( blocks.b );
-			blocks.b.crumble();
-		}
-
-		if( this.player.isOnWall ) {
-			blocks.l && blocks.l.crumble();
-			blocks.r && blocks.r.crumble();
-		}
-
-		this.checkGoal();
 	}
 
 

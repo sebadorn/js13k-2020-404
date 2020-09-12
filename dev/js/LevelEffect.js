@@ -96,26 +96,6 @@ class LevelEffect {
 	 * @private
 	 * @param {CanvasRenderingContext2d} ctx
 	 */
-	_drawGoal( ctx ) {
-		// TODO:
-	}
-
-
-	/**
-	 *
-	 * @private
-	 * @param {CanvasRenderingContext2d} ctx
-	 */
-	_drawHangDust( ctx ) {
-		// TODO:
-	}
-
-
-	/**
-	 *
-	 * @private
-	 * @param {CanvasRenderingContext2d} ctx
-	 */
 	_drawJumpDust( ctx ) {
 		let prog = this.timer / this.endTime;
 
@@ -169,19 +149,6 @@ class LevelEffect {
 
 			this.x = this.data.x - 40;
 			this.xe = this.x + 100;
-		}
-		else if( type === 3 ) {
-			this.draw = this._drawHangDust;
-			this.endTime = 4 * js13k.TARGET_FPS;
-
-			this.x = this.data.x - 40;
-			this.xe = this.x + 100;
-		}
-		else if( type === 4 ) {
-			this.draw = this._drawGoal;
-
-			this.x = this.data.x;
-			this.xe = this.x + this.data.w;
 		}
 	}
 

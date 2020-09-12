@@ -25,7 +25,7 @@ tr -d '\n' < 'index-dev.html' > 'index.html'
 
 # Remove the single JS files and only include the minified one.
 sed -i'' 's/js\/js13k\.js/i.js/' 'index.html'
-sed -E -i'' 's/<script src="([a-zA-Z0-9_-]+\/)?[a-zA-Z0-9_.-]{2,}\.js"><\/script>//g' 'index.html'
+sed -E -i'' 's/<script src="([a-zA-Z0-9_-]+\/)+[a-zA-Z0-9_.-]{2,}\.js"><\/script>//g' 'index.html'
 
 # Minify and combine the JS files.
 $TERSER \
@@ -36,6 +36,7 @@ $TERSER \
 	'LevelObject.js' \
 	'Character.js' \
 	'levels/Intro.js' \
+	'levels/Climb.js' \
 	'levels/Outro.js' \
 	'Renderer.js' \
 	'UI.js' \

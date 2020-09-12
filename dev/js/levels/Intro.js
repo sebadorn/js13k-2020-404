@@ -14,9 +14,9 @@ class Level_Intro extends js13k.Level {
 		super();
 
 		this.hasStarted = false;
-		// 256 - 32, 600
-		this.player = new js13k.Character( this, 5980, 0, 3 );
-		this.player.y = 300 - this.player.h;
+
+		this.player = new js13k.Character( this, 224, 0, 3 );
+		this.player.y = 600 - this.player.h;
 		this.player.isOnGround = true;
 
 		// Because of the stone tile, width and height have to be multiples of 64.
@@ -61,22 +61,27 @@ class Level_Intro extends js13k.Level {
 			{ x: 4844, y:  500, w:  64, h:  64  },
 			{ x: 4904, y: -500, w:  64, h: 1408, spikes: 't' },
 			// Platforms behind wall
-			{ x: 5192, y: 564, w:  64, h: 64 },
-			{ x: 5320, y: 500, w: 256, h: 64 },
+			{ x: 5256, y: 564, w:  64, h: 64 },
+			{ x: 5416, y: 500, w: 128, h: 64 },
 			{ x: 5640, y: 436, w: 256, h: 64 },
 
 			// Check point
 			{ x: 5960, y: 372, w: 192, h: 600, t: 2 },
 			// Bridge
-			{ x: 6216, y: 436, w: 256, h:  64 },
-			{ x: 6468, y: 436, w: 256, h:  64 },
-			{ x: 6720, y: 436, w: 256, h:  64 },
-			{ x: 6720, y: -64, w: 128, h: 320, spikes: 'l' },
-			{ x: 6972, y: 436, w: 256, h:  64 },
+			{ x: 6216, y: 436, w: 128, h:  64, spikes: 't' },
+			{ x: 6340, y: 444, w: 128, h:  64 },
+			{ x: 6464, y: 436, w: 128, h:  64, spikes: 't' },
+			{ x: 6588, y: 444, w: 128, h:  64 },
+			{ x: 6856, y: 496, w:  64, h: 320, spikes: 't' },
+			{ x: 6856, y: 244, w:  64, h: 192, spikes: 't' },
+			{ x: 6712, y: 444, w: 256, h:  64 },
+			{ x: 6784, y: -64, w: 128, h: 320, spikes: 'l' },
+			{ x: 6964, y: 444, w: 256, h:  64 },
 
 			// Check point / Goal
 			{ x: 7676, y: 320, w: 192, h: 600, t: 2 },
-			{ x: 7612, y: js13k.MAX_CANVAS_HEIGHT - 64, w:  64, h:  64 }
+			{ x: 7420, y: 384, w:  64, h:  64 },
+			{ x: 7612, y: js13k.Renderer.cnv.height - 64, w:  64, h:  64 }
 		];
 
 		objects.forEach( o => {
@@ -85,7 +90,9 @@ class Level_Intro extends js13k.Level {
 		} );
 
 		this.goal = [7848, 0, 20, 320];
-		this.limits = [0, 7868 - js13k.Renderer.cnv.width]; // Level limits on the x axis.
+		this.limitsX = [0, 7868]; // Level limits on the x axis.
+
+		// this.reachedGoal = 0;
 	}
 
 
@@ -112,7 +119,7 @@ class Level_Intro extends js13k.Level {
 			// Blinking effect.
 			if( ~~this.timer % 200 > 30 ) {
 				ctx.font = '36px Arial, sans-serif';
-				ctx.fillText( 'Press [Space] to start', centerX, centerY + 58 );
+				ctx.fillText( 'Press [Space] to run from a crumbling world', centerX, centerY + 58 );
 			}
 
 			// Hint to use gamepad.
@@ -127,6 +134,16 @@ class Level_Intro extends js13k.Level {
 				ctx.fillText( 'No gamepad connected', centerX, 24 );
 			}
 		}
+		else if( this.state === 1 ) {
+			const cnvWidth = js13k.Renderer.cnv.width;
+			const cnvHeight = js13k.Renderer.cnv.height;
+
+			const diff = this.timer - this.reachedGoal;
+			const prog = 1 - Math.min( 1, diff / ( 0.3 * js13k.TARGET_FPS ) );
+
+			ctx.fillStyle = '#000';
+			ctx.fillRect( prog * cnvWidth, 0, cnvWidth, cnvHeight );
+		}
 	}
 
 
@@ -134,7 +151,7 @@ class Level_Intro extends js13k.Level {
 	 *
 	 */
 	onGoal() {
-		js13k.Renderer.changeLevel( new js13k.Level.Outro() );
+		this.reachedGoal = this.timer;
 	}
 
 
@@ -145,6 +162,12 @@ class Level_Intro extends js13k.Level {
 	update( dt ) {
 		if( this.hasStarted ) {
 			super.update( dt );
+
+			if( this.state === 1 ) {
+				if( this.reachedGoal && this.timer - this.reachedGoal >= 0.45 * js13k.TARGET_FPS ) {
+					js13k.Renderer.changeLevel( new js13k.Level.Climb() );
+				}
+			}
 		}
 		else {
 			this.timer += dt;

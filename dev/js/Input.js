@@ -10,6 +10,7 @@ js13k.Input = {
 	ACTION: {
 		PAUSE: 1,
 		JUMP: 2,
+		RESPAWN: 3,
 
 		LEFT: 10,
 		UP: 11,
@@ -65,6 +66,10 @@ js13k.Input = {
 			[this.ACTION.JUMP]: {
 				keyboard: ['Space'],
 				gamepad: [0]
+			},
+			[this.ACTION.RESPAWN]: {
+				keyboard: ['Backspace'],
+				gamepad: [this.isLinuxFirefox ? 2 : 3]
 			}
 		};
 	},

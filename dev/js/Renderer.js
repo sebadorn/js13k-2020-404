@@ -21,6 +21,7 @@ js13k.Renderer = {
 	 */
 	changeLevel( level ) {
 		this.level = level;
+		this.resize( level.VIEWPORT_MAX_WIDTH, level.VIEWPORT_MAX_HEIGHT );
 	},
 
 
@@ -146,7 +147,7 @@ js13k.Renderer = {
 	 *
 	 */
 	registerEvents() {
-		window.addEventListener( 'resize', ev => this.resize( ev ) );
+		window.addEventListener( 'resize', ev => this.resize() );
 		this.resize();
 
 		const keys = js13k.Input.getKeysForAction( js13k.Input.ACTION.PAUSE );
@@ -184,15 +185,17 @@ js13k.Renderer = {
 
 	/**
 	 * Resize the canvas.
-	 * @param {?Event} ev
+	 * @param {?number} w
+	 * @param {?number} h
 	 */
-	resize( ev ) {
-		if( ev ) {
-			this.pause();
+	resize( w, h ) {
+		if( this.level ) {
+			w = w || this.level.VIEWPORT_MAX_WIDTH;
+			h = h || this.level.VIEWPORT_MAX_HEIGHT;
 		}
 
-		this.cnv.height = Math.min( window.innerHeight, js13k.MAX_CANVAS_HEIGHT );
-		this.cnv.width = window.innerWidth;
+		this.cnv.height = Math.min( window.innerHeight, h || js13k.MAX_CANVAS_HEIGHT );
+		this.cnv.width = Math.min( window.innerWidth, w || js13k.MAX_CANVAS_WIDTH );
 
 		this.centerX = Math.round( this.cnv.width / 2 );
 		this.centerY = Math.round( this.cnv.height / 2 );

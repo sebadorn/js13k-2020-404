@@ -13,6 +13,10 @@ class Level_Outro extends js13k.Level {
 	constructor() {
 		super();
 
+		this.VIEWPORT_MAX_WIDTH = window.innerWidth;
+		this.VIEWPORT_MAX_HEIGHT = window.innerHeight;
+		js13k.Renderer.resize( this.VIEWPORT_MAX_WIDTH, this.VIEWPORT_MAX_HEIGHT );
+
 		this._hideWorld = 0;
 		this._textW = 0;
 		this.phase = 1;

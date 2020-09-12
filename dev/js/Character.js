@@ -28,6 +28,7 @@ class Character extends js13k.LevelObject {
 		// These attributes exist, but are set in or after the collision
 		// detection. Commenting it out here to save some bytes.
 		//
+		// this.died = 0;
 		// this.isOnGround = false;
 		// this.isOnWall = 0;
 		// this.isWalking = false;
@@ -103,6 +104,13 @@ class Character extends js13k.LevelObject {
 		if( this.isOnWall ) {
 			this.velX = 0;
 
+			// Cancel wall hanging.
+			if( dir.y > 0 ) {
+				this.isOnWall = 0;
+				this.blocks.l = null;
+				this.blocks.r = null;
+			}
+
 			// Slide down wall.
 			if( this.level.timer - this.isOnWall > js13k.TARGET_FPS ) {
 				this.velY = Math.min( this.velY + dt * js13k.GRAVITY / 8, js13k.MAX_VELOCITY_Y / 4 );
@@ -118,7 +126,7 @@ class Character extends js13k.LevelObject {
 			return;
 		}
 
-		if( !this.isOnGround ) {
+		if( !this.isOnGround && !this.isInCoyoteTime() ) {
 			this.velY = Math.min( this.velY + dt * js13k.GRAVITY, js13k.MAX_VELOCITY_Y );
 		}
 
@@ -146,8 +154,7 @@ class Character extends js13k.LevelObject {
 		return (
 			this.isOnGround ||
 			this.isOnWall ||
-			// Coyote time
-			this.level.timer - this.lastOnGround < 2
+			this.isInCoyoteTime()
 		);
 	}
 
@@ -267,6 +274,15 @@ class Character extends js13k.LevelObject {
 	 */
 	isFallingDown() {
 		return !this.isOnGround && !this.isOnWall && this.velY > 0;
+	}
+
+
+	/**
+	 *
+	 * @return {boolean}
+	 */
+	isInCoyoteTime() {
+		return this.level.timer - this.lastOnGround < 2;
 	}
 
 
