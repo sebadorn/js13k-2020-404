@@ -1,5 +1,7 @@
 # js13k 2020: And then it was gone.
 
+![Screenshot from the game.](thumb_400x250.png?raw=true)
+
 Entry for the [js13k competition of 2020](https://2020.js13kgames.com/).  
 Theme: **404** (Not Found)
 
