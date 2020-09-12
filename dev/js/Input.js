@@ -64,7 +64,7 @@ js13k.Input = {
 				gamepad: [15]
 			},
 			[this.ACTION.JUMP]: {
-				keyboard: ['Space'],
+				keyboard: ['Space', 'Enter'],
 				gamepad: [0]
 			},
 			[this.ACTION.RESPAWN]: {
