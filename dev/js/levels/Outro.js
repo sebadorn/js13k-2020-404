@@ -45,7 +45,7 @@ class Level_Outro extends js13k.Level {
 		// Phase 2: Player is gone, end title.
 		else if( this.phase === 2 ) {
 			ctx.fillStyle = '#df7126';
-			ctx.font = 'bold 128px Arial, sans-serif';
+			ctx.font = 'bold 92px Arial, sans-serif';
 			ctx.textAlign = 'right';
 
 			js13k.Renderer.setShadowText( 10, '#a2a2a2' );

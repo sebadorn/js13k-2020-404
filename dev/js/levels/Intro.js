@@ -108,7 +108,7 @@ class Level_Intro extends js13k.Level {
 			const centerY = js13k.Renderer.centerY;
 
 			ctx.fillStyle = '#fff';
-			ctx.font = 'bold 92px Arial, sans-serif';
+			ctx.font = 'bold 80px Arial, sans-serif';
 			ctx.textAlign = 'center';
 			ctx.textBaseline = 'alphabetic';
 
@@ -118,7 +118,7 @@ class Level_Intro extends js13k.Level {
 
 			// Blinking effect.
 			if( ~~this.timer % 200 > 30 ) {
-				ctx.font = '36px Arial, sans-serif';
+				ctx.font = '32px Arial, sans-serif';
 				ctx.fillText( 'Press [Space] to run from a crumbling world', centerX, centerY + 58 );
 			}
 

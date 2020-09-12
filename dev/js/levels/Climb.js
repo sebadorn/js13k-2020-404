@@ -19,7 +19,7 @@ class Level_Climb extends js13k.Level {
 		js13k.Renderer.resize( this.VIEWPORT_MAX_WIDTH, this.VIEWPORT_MAX_HEIGHT );
 
 		const vpW = this.VIEWPORT_MAX_WIDTH;
-		const vpH = this.VIEWPORT_MAX_HEIGHT;
+		const vpH = js13k.Renderer.cnv.height;
 
 		this.player = new js13k.Character( this, 632, 0, 3 );
 		this.player.y = vpH - 128 - this.player.h;
@@ -98,9 +98,9 @@ class Level_Climb extends js13k.Level {
 			this.objects.push( lo );
 		} );
 
-		this.goal = [0, -1260, this.VIEWPORT_MAX_WIDTH, 60];
+		this.goal = [0, vpH - 2324, this.VIEWPORT_MAX_WIDTH, 60];
 		this.limitsX = [0, this.VIEWPORT_MAX_WIDTH];
-		this.limitsY = [-1260, 0];
+		this.limitsY = [vpH - 2324, 0];
 	}
 
 
